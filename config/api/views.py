@@ -10,8 +10,6 @@ class SendCoordinateDataView(APIView):
     parser_classes = [JSONParser]
 
     def post(self, request, format=None):
-        print(CoordinateDataWrapper.find_by_lon_and_lat('37.661104', '55.776088'))
-        return Response(status=status.HTTP_201_CREATED)
         try:
             CoordinateDataWrapper.save(request.data)
             return Response(status=status.HTTP_201_CREATED)
