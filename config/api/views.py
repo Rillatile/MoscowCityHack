@@ -15,3 +15,27 @@ class SendCoordinateDataView(APIView):
             return Response(status=status.HTTP_201_CREATED)
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SendOrganizationDataView(APIView):
+    parser_classes = [JSONParser]
+
+    def post(self, request, format=None):
+        return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+class SendRentalPriceDataView(APIView):
+    rser_classes = [JSONParser]
+
+    def post(self, request, format=None):
+        return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+class SendHousePopulationDataView(APIView):
+    rser_classes = [JSONParser]
+
+    def post(self, request, format=None):
+        return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+
