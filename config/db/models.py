@@ -1,4 +1,6 @@
 from django.contrib.postgres.fields import ArrayField
+from django.conf import settings
+
 from django.db import models
 
 
@@ -123,7 +125,8 @@ class Layer(models.Model):
         blank=False,
         verbose_name='Широта'
     )
-    distance = models.FloatField()  # ?
+    lon_distance = models.FloatField(default=settings.LON_DISTANCE)
+    lat_distance = models.FloatField(default=settings.LAT_DISTANCE)
     value = models.FloatField()
 
 
