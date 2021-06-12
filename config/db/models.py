@@ -161,6 +161,11 @@ class Metric(models.Model):
     optim_config = models.BooleanField(default=False)
     generalizing_oper = models.CharField(max_length=3, choices=OPERATION_CHOICES, default='ave')
 
+    def __eq__(self, other):
+        if self.id == other.id:
+            return True
+        return False
+
 
 # *** Models of concrete activities that uses a service ***
 class Layer(models.Model):

@@ -129,21 +129,22 @@ class LayerBuilder:
             # start + ((point - start)//step)*step for lon coord
             # start - ((start - point)//step)*step for lat coord
             left_up_point = [
-                start_point[0] - lat_step*((start_point[0] - point.lat)//lat_step),
-                start_point[1] + lon_step*((point.lon - start_point[1])//lon_step)
+                round(start_point[0] - lat_step*((start_point[0] - float(point.lat))//lat_step), 6),
+                round(start_point[1] + lon_step*((float(point.lon) - start_point[1])//lon_step), 6)
             ]
             # Search a layer with such coordinates
-            # todo: округление!!!!
             for k, layer in enumerate(layers):
-                if (layer.lat == left_up_point[0]) and (layer.lon == left_up_point[1]) and (layer.metric == point.metric):
+                if (round(layer.lat, 6) == left_up_point[0]) and (round(layer.lon, 6) == left_up_point[1]) and \
+                        (layer.metric == point.metric):
                     break
-            # Increment layers[i].value
+            # Increment layers[i].value and layer_counter value
             layers[k].value = layers[k].value + point.processed_value
             layer_counter[k] = layer_counter[k] + 1
         # Count average Layer value
         # There is chance to "play" with data - you can use median, min, max etc values instead of average
         for i, _ in enumerate(layers):
-            layers[i] = layers[i].value / layer_counter[i]
+            if point.metric.generalizing_oper == 'ave':
+                layers[i] = layers[i].value / layer_counter[i]
         # Update it
         Layer.objects.bulk_update(layers, ['value'])
 
