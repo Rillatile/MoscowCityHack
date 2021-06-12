@@ -79,3 +79,47 @@ class Layer(models.Model):
 
 
 # *** Models of concrete activities that uses a service ***
+# Food retail Scope
+# todo: add two or more activity types to Food retail Scope
+
+# Beauty Scope
+class BarbershopLayers(Layer):
+    ...
+# todo: add one activity type to Beauty Scope
+
+
+# Public catering Scope
+class CafeLayers(Layer):
+    ...
+
+
+class BarLayers(Layer):
+    ...
+
+
+# Household chemicals Scope
+class СosmeticsStoreLayers(Layer):
+    ...
+
+
+class HouseChemicLayers(Layer):
+    ...
+
+
+# Health Scope
+class DentistryLayers(Layer):
+    ...
+
+
+class ClinicLayers(Layer):
+    ...
+
+
+# Services Scope
+# todo: come up with at least two types of activities for this Scope
+# e.g.:
+# class SomeServiceLayers(Layer):
+#     ...
+#
+# class AnotherServiceLayers(Layer):
+#     ...
