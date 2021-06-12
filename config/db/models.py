@@ -32,3 +32,94 @@ class CoordinateData(models.Model):
         verbose_name='Необработанные значения'
     )
     processed_value = models.FloatField()
+
+
+class Scope(models.Model):
+    name = models.CharField(max_length=100)
+
+
+class Activity(models.Model):
+    name = models.CharField(max_length=100)
+    scope = models.ForeignKey(to=Scope, on_delete=models.CASCADE)
+    config = ArrayField(models.FloatField())
+
+
+class Metric(models.Model):
+    """
+    Metric model - base info about analysed data.
+    Fields:
+     - name - name of metric
+     - optim_config - array of boolean values (False - mean you should minimise that metric,
+    True - mean you should maximize that metric)
+    """
+    name = models.CharField(max_length=100)
+    optim_config = models.BooleanField(default=False)
+
+
+class Layer(models.Model):
+    metric = models.ForeignKey(
+        to=Metric,
+        on_delete=models.CASCADE,
+        null=False
+    )
+    lon = models.CharField(
+        max_length=10,
+        null=False,
+        blank=False,
+        verbose_name='Долгота'
+    )
+    lat = models.CharField(
+        max_length=10,
+        null=False,
+        blank=False,
+        verbose_name='Широта'
+    )
+    distance = models.FloatField()  # ?
+    value = models.FloatField()
+
+
+# *** Models of concrete activities that uses a service ***
+# Food retail Scope
+# todo: add two or more activity types to Food retail Scope
+
+# Beauty Scope
+class BarbershopLayers(Layer):
+    ...
+# todo: add one activity type to Beauty Scope
+
+
+# Public catering Scope
+class CafeLayers(Layer):
+    ...
+
+
+class BarLayers(Layer):
+    ...
+
+
+# Household chemicals Scope
+class СosmeticsStoreLayers(Layer):
+    ...
+
+
+class HouseChemicLayers(Layer):
+    ...
+
+
+# Health Scope
+class DentistryLayers(Layer):
+    ...
+
+
+class ClinicLayers(Layer):
+    ...
+
+
+# Services Scope
+# todo: come up with at least two types of activities for this Scope
+# e.g.:
+# class SomeServiceLayers(Layer):
+#     ...
+#
+# class AnotherServiceLayers(Layer):
+#     ...
