@@ -28,13 +28,16 @@ class CoordinateDataWrapper:
 class OrganizationDataWrapper:
     def save(data):
         for organization in data['result']:
+            print(organization)
             od = OrganizationData(
                 name = organization['name'].lower(),
                 address = organization['address'].lower(),
-                type = Activity.objects.filter(name=organization['type'].lower()),
-                lon = organization['points']['lon'],
-                lat = organization['points'['lat']]
+                type = Activity.objects.get(name=organization['type'].lower()),
+                lon = str(organization['point']['lon']).replace(',', '.'),
+                lat = str(organization['point']['lat']).replace(',', '.')
             )
+
+            print(od)
 
             od.save()
 
