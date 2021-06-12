@@ -48,3 +48,14 @@ class RentalPriceDataWrapper:
 class HousePopulationDataWrapper:
     def save(data):
         pass
+
+
+class ConnectionsLogWrapper:
+    def parse_connections_log_file(path):
+        with open(path, 'r') as f:
+            for i, line in enumerate(f):
+                if i != 0:
+                    data = line.split(',').map(lambda value: value.replace(
+                        '(', '').replace(')', '').replace('"', '').strip())
+                    print(data)
+                    return

@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from db.business_logic import (
+    ConnectionsLogWrapper,
     CoordinateDataWrapper,
     HousePopulationDataWrapper,
     OrganizationDataWrapper,
@@ -51,5 +52,17 @@ class SendHousePopulationDataView(APIView):
         try:
             HousePopulationDataWrapper.save(request.data)
             return Response(status=status.HTTP_201_CREATED)
+        except:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ParseConnectionsLogFileView(APIView):
+    parser_classes = [JSONParser]
+
+    def post(self, request, format=None):
+        try:
+            ConnectionsLogWrapper.parse_connections_log_file(
+                request.data['path'])
+            return Response(status=status.HTTP_200_OK)
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
