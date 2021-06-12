@@ -29,7 +29,8 @@ class CoordinateData(models.Model):
         blank=True,
         verbose_name='Номер дома'
     )
-    metric = models.ForeignKey(to='Metric', on_delete=models.CASCADE)
+    metric = models.ForeignKey(
+        to='Metric', on_delete=models.CASCADE, null=True)
     raw_values = ArrayField(
         models.FloatField(),
         verbose_name='Необработанные значения'
