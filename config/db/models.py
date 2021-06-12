@@ -153,8 +153,16 @@ class Metric(models.Model):
      - optim_config - boolean value (False - mean you should minimise that metric,
     True - mean you should maximize that metric)
     """
+    OPERATION_CHOICES = (
+        ('sum', 'Sum'),
+        ('ave', 'Average'),
+        ('min', 'Minimum'),
+        ('max', 'Maximum'),
+        ('med', 'Median'),
+    )
     name = models.CharField(max_length=100)
     optim_config = models.BooleanField(default=False)
+    generalizing_oper = models.CharField(max_length=3, choices=OPERATION_CHOICES, default='ave')
 
 
 # *** Models of concrete activities that uses a service ***
@@ -176,35 +184,35 @@ class Layer(models.Model):
 
 # Beauty Scope
 class BarbershopLayers(Layer):
-    ...
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
 # todo: add one activity type to Beauty Scope
 
 
 # Public catering Scope
 class CafeLayers(Layer):
-    ...
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
 
 
 class BarLayers(Layer):
-    ...
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
 
 
 # Household chemicals Scope
 class СosmeticsStoreLayers(Layer):
-    ...
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
 
 
 class HouseChemicLayers(Layer):
-    ...
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
 
 
 # Health Scope
 class DentistryLayers(Layer):
-    ...
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
 
 
 class ClinicLayers(Layer):
-    ...
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
 
 
 # Services Scope
