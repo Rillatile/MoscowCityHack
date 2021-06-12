@@ -58,13 +58,14 @@ class LayerBuilder:
         # Count layers[i].value
         for point in coordinate_data:
             # Count where the point is placed (section start coordinates)
-            # ((point - start)/step -1)*step + start
+            # !!!!!
+            # ((point - start)//step)*step + start
             left_up_point = [settings.EDGE_RIGHT_DOWN +
                              settings.LAT_DISTANCE * (
-                                         (point.lat - settings.EDGE_RIGHT_DOWN[0]) / settings.LAT_DISTANCE - 1),
+                                         (point.lat - settings.EDGE_RIGHT_DOWN[0]) // settings.LAT_DISTANCE),
                              settings.EDGE_RIGHT_DOWN +
                              settings.LON_DISTANCE * (
-                                         (point.lat - settings.EDGE_RIGHT_DOWN[1]) / settings.LON_DISTANCE - 1),
+                                         (point.lon - settings.EDGE_RIGHT_DOWN[1]) // settings.LON_DISTANCE),
                              ]
             # Search a layer with such coordinates
             for k, layer in enumerate(layers):
