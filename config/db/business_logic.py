@@ -1,7 +1,15 @@
+from datetime import datetime
+from os import access
+
+from django.db import connection
 from .models import (
     Activity,
+    Connection,
     CoordinateData,
-    OrganizationData
+    Device,
+    OrganizationData,
+    User,
+    WAP
 )
 
 
@@ -55,7 +63,26 @@ class ConnectionsLogWrapper:
         with open(path, 'r') as f:
             for i, line in enumerate(f):
                 if i != 0:
-                    data = line.split(',').map(lambda value: value.replace(
-                        '(', '').replace(')', '').replace('"', '').strip())
-                    print(data)
-                    return
+                    raw_data = line.split(',')
+                    device = Device.objects.get_or_create(
+                        device_hash=raw_data[2]
+                    )
+                    user = None
+                    if raw_data[3] != 'null':
+                        user = User.objects.get_or_create(
+                            user_hash=raw_data[3]
+                        )
+                    wap = WAP.objects.get_or_create(
+                        mac=raw_data[1],
+                        lat=raw_data[4].replace('(', '').strip(),
+                        lon=raw_data[5].replace(')', '').strip(),
+                    )
+                    connection = Connection(
+                        datetime=datetime.strptime(
+                            raw_data[0], '%Y-%m-%d %H:%M:%S'),
+                        access_point=wap,
+                        device=device,
+                        user=user
+                    )
+
+                    connection.save()
