@@ -19,3 +19,18 @@ class CoordinateDataWrapper:
     
     def find_by_lon_and_lat(lon: str, lat: str):
         return CoordinateData.objects.filter(lon=lon, lat=lat)
+
+
+class OrganizationDataWrapper:
+    def save(data):
+        pass
+
+
+class RentalPriceDataWrapper:
+    def save(data):
+        pass
+
+
+class HousePopulationDataWrapper:
+    def save(data):
+        pass
