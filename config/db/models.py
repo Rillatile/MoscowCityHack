@@ -113,18 +113,8 @@ class Layer(models.Model):
         on_delete=models.CASCADE,
         null=False
     )
-    lon = models.CharField(
-        max_length=20,
-        null=False,
-        blank=False,
-        verbose_name='Долгота'
-    )
-    lat = models.CharField(
-        max_length=20,
-        null=False,
-        blank=False,
-        verbose_name='Широта'
-    )
+    lon = models.FloatField(verbose_name='Долгота')
+    lat = models.FloatField(verbose_name='Широта')
     lon_distance = models.FloatField(default=settings.LON_DISTANCE)
     lat_distance = models.FloatField(default=settings.LAT_DISTANCE)
     value = models.FloatField()
