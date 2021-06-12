@@ -1,7 +1,9 @@
+from os import access
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
 
 from django.db import models
+from django.db.models.expressions import F
 
 
 class CoordinateData(models.Model):
@@ -29,7 +31,8 @@ class CoordinateData(models.Model):
         blank=True,
         verbose_name='Номер дома'
     )
-    metric = models.ForeignKey(to='Metric', on_delete=models.CASCADE)
+    metric = models.ForeignKey(
+        to='Metric', on_delete=models.CASCADE, null=True)
     raw_values = ArrayField(
         models.FloatField(),
         verbose_name='Необработанные значения'
@@ -58,6 +61,59 @@ class WAP(models.Model):
     )
 
 
+class Device(models.Model):
+    device_hash = models.CharField(
+        max_length=50,
+        null=False,
+        blank=False,
+        verbose_name='Hash идентификатора wi-fi клиента'
+    )
+
+
+class User(models.Model):
+    user_hash = models.CharField(
+        max_length=50,
+        null=True,
+        blank=False,
+        verbose_name='Hash идентификатора пользователя'
+    )
+
+
+class Connection(models.Model):
+    datetime = models.DateTimeField(
+        null=False,
+        verbose_name='Дата и время подключения к wi-fi'
+    )
+    access_point = models.ForeignKey(
+        to=WAP,
+        null=False,
+        on_delete=models.CASCADE,
+        verbose_name='Точка доступа'
+    )
+    device = models.ForeignKey(
+        to=Device,
+        null=False,
+        on_delete=models.CASCADE,
+        verbose_name='Устройство'
+    )
+    user = models.ForeignKey(
+        to=User,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name='Пользователь'
+    )
+
+
+class Scope(models.Model):
+    name = models.CharField(max_length=100)
+
+
+class Activity(models.Model):
+    name = models.CharField(max_length=100)
+    scope = models.ForeignKey(to=Scope, on_delete=models.CASCADE)
+    config = ArrayField(models.FloatField())
+
+
 class OrganizationData(models.Model):
     name = models.CharField(
         max_length=255,
@@ -69,6 +125,11 @@ class OrganizationData(models.Model):
         max_length=255,
         null=False,
         blank=False
+    )
+    type = models.ForeignKey(
+        to=Activity,
+        on_delete=models.CASCADE,
+        verbose_name='Вид деятельности'
     )
     lon = models.CharField(
         max_length=20,
@@ -82,16 +143,6 @@ class OrganizationData(models.Model):
         blank=False,
         verbose_name='Широта'
     )
-
-
-class Scope(models.Model):
-    name = models.CharField(max_length=100)
-
-
-class Activity(models.Model):
-    name = models.CharField(max_length=100)
-    scope = models.ForeignKey(to='Scope', on_delete=models.CASCADE)
-    config = ArrayField(models.FloatField())
 
 
 class Metric(models.Model):

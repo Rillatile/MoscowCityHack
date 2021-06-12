@@ -1,6 +1,20 @@
-from django.conf import settings
+from dateutil.parser import parse
+from datetime import datetime
+from os import access
 
-from .models import CoordinateData, Layer, Metric
+from django.conf import settings
+from django.db import connection
+from .models import (
+    Activity,
+    Connection,
+    CoordinateData,
+    Device,
+    OrganizationData,
+    User,
+    WAP,
+    Layer,
+    Metric
+)
 
 
 class CoordinateDataWrapper:
@@ -25,7 +39,17 @@ class CoordinateDataWrapper:
 
 class OrganizationDataWrapper:
     def save(data):
-        pass
+        for organization in data['result']:
+            print(organization)
+            od = OrganizationData(
+                name=organization['name'].lower(),
+                address=organization['address'].lower(),
+                type=Activity.objects.get(name=organization['type'].lower()),
+                lon=str(organization['point']['lon']).replace(',', '.'),
+                lat=str(organization['point']['lat']).replace(',', '.')
+            )
+
+            od.save()
 
 
 class RentalPriceDataWrapper:
@@ -36,6 +60,37 @@ class RentalPriceDataWrapper:
 class HousePopulationDataWrapper:
     def save(data):
         pass
+
+
+class ConnectionsLogWrapper:
+    def parse_connections_log_file(path):
+        with open(path, 'r') as f:
+            for i, line in enumerate(f):
+                if i != 0:
+                    raw_data = line.split(',')
+                    device = Device.objects.get_or_create(
+                        device_hash=raw_data[2]
+                    )
+                    user = None
+                    if raw_data[3] != 'null':
+                        user = User.objects.get_or_create(
+                            user_hash=raw_data[3]
+                        )
+                    wap = WAP.objects.get_or_create(
+                        mac=raw_data[1],
+                        lat=raw_data[4].replace(
+                            '(', '').replace('"', '').strip(),
+                        lon=raw_data[5].replace(')', '').replace(
+                            '"', '').strip(),
+                    )
+                    connection = Connection(
+                        datetime=parse(raw_data[0]),
+                        access_point=wap,
+                        device=device,
+                        user=user
+                    )
+
+                    connection.save()
 
 
 class LayerBuilder:
@@ -113,4 +168,3 @@ class LayerBuilder:
         """Find and return all layer objects in the first or in the third quartile (1th - when metric optmin_config =
         False, and 3th - when metric optim_config - True) """
         ...
-

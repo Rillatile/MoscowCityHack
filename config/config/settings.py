@@ -27,7 +27,9 @@ SECRET_KEY = os.environ['MCH_SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    os.environ['VM_IP']
+]
 
 
 # Application definition
@@ -81,7 +83,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mch_db',
+        'NAME': os.environ['MCH_DB'],
         'USER': os.environ['MCH_DB_USER'],
         'PASSWORD': os.environ['MCH_DB_PASSWORD'],
         'HOST': os.environ['MCH_DB_HOST'],
