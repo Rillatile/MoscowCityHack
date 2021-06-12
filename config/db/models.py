@@ -27,6 +27,7 @@ class CoordinateData(models.Model):
         blank=True,
         verbose_name='Номер дома'
     )
+    metric = models.ForeignKey(to='Metric', on_delete=models.CASCADE)
     raw_values = ArrayField(
         models.FloatField(),
         verbose_name='Необработанные значения'
@@ -100,17 +101,18 @@ class Metric(models.Model):
     """
     Metric model - base info about analysed data.
     Fields:
-     - name - name of metric
-     - optim_config - array of boolean values (False - mean you should minimise that metric,
+     - name - name of metric (Проходимость, Стоимость площади, Заселенность, Похожие организации)
+     - optim_config - boolean value (False - mean you should minimise that metric,
     True - mean you should maximize that metric)
     """
     name = models.CharField(max_length=100)
     optim_config = models.BooleanField(default=False)
 
 
+# *** Models of concrete activities that uses a service ***
 class Layer(models.Model):
     metric = models.ForeignKey(
-        to=Metric,
+        to='Metric',
         on_delete=models.CASCADE,
         null=False
     )
@@ -130,7 +132,6 @@ class Layer(models.Model):
     value = models.FloatField()
 
 
-# *** Models of concrete activities that uses a service ***
 # Food retail Scope
 # todo: add two or more activity types to Food retail Scope
 
