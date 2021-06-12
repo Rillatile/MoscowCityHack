@@ -1,3 +1,4 @@
+from dateutil.parser import parse
 from datetime import datetime
 from os import access
 
@@ -74,12 +75,13 @@ class ConnectionsLogWrapper:
                         )
                     wap = WAP.objects.get_or_create(
                         mac=raw_data[1],
-                        lat=raw_data[4].replace('(', '').strip(),
-                        lon=raw_data[5].replace(')', '').strip(),
+                        lat=raw_data[4].replace(
+                            '(', '').replace('"', '').strip(),
+                        lon=raw_data[5].replace(')', '').replace(
+                            '"', '').strip(),
                     )
                     connection = Connection(
-                        datetime=datetime.strptime(
-                            raw_data[0], '%Y-%m-%d %H:%M:%S'),
+                        datetime=parse(raw_data[0]),
                         access_point=wap,
                         device=device,
                         user=user
