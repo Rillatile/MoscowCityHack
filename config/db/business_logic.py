@@ -1,4 +1,8 @@
-from .models import CoordinateData
+from .models import (
+    Activity,
+    CoordinateData,
+    OrganizationData
+)
 
 
 class CoordinateDataWrapper:
@@ -23,7 +27,16 @@ class CoordinateDataWrapper:
 
 class OrganizationDataWrapper:
     def save(data):
-        pass
+        for organization in data['result']:
+            od = OrganizationData(
+                name = organization['name'].lower(),
+                address = organization['address'].lower(),
+                type = Activity.objects.filter(name=organization['type'].lower()),
+                lon = organization['points']['lon'],
+                lat = organization['points'['lat']]
+            )
+
+            od.save()
 
 
 class RentalPriceDataWrapper:

@@ -55,6 +55,16 @@ class WAP(models.Model):
     )
 
 
+class Scope(models.Model):
+    name = models.CharField(max_length=100)
+
+
+class Activity(models.Model):
+    name = models.CharField(max_length=100)
+    scope = models.ForeignKey(to=Scope, on_delete=models.CASCADE)
+    config = ArrayField(models.FloatField())
+
+
 class OrganizationData(models.Model):
     name = models.CharField(
         max_length=255,
@@ -66,6 +76,11 @@ class OrganizationData(models.Model):
         max_length=255,
         null=False,
         blank=False
+    )
+    type = models.ForeignKey(
+       to=Activity,
+       on_delete=models.CASCADE,
+       verbose_name='Вид деятельности'
     )
     lon = models.CharField(
         max_length=20,
@@ -79,16 +94,6 @@ class OrganizationData(models.Model):
         blank=False,
         verbose_name='Широта'
     )
-
-
-class Scope(models.Model):
-    name = models.CharField(max_length=100)
-
-
-class Activity(models.Model):
-    name = models.CharField(max_length=100)
-    scope = models.ForeignKey(to=Scope, on_delete=models.CASCADE)
-    config = ArrayField(models.FloatField())
 
 
 class Metric(models.Model):
