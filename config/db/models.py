@@ -84,6 +84,7 @@ class Connection(models.Model):
     access_point = models.ForeignKey(
         to=WAP,
         null=False,
+        on_delete=models.CASCADE,
         verbose_name='Точка доступа'
     )
     device = models.ForeignKey(
@@ -94,6 +95,7 @@ class Connection(models.Model):
     user = models.ForeignKey(
         to=User,
         null=True,
+        on_delete=models.CASCADE,
         verbose_name='Пользователь'
     )
 
