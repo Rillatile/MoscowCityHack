@@ -40,8 +40,9 @@ class HousePopulationDataWrapper:
 
 class LayerBuilder:
     @staticmethod
-    def group_coord_by_sectors():
-        coordinate_data = CoordinateData.objects.select_related('metric').all()
+    def group_coord_by_sectors(coordinate_data=None):
+        if not coordinate_data:
+            coordinate_data = CoordinateData.objects.select_related('metric').all()
         # Create layer sectors
         metrics = Metric.objects.all()
         # todo: round the last border to up
@@ -79,3 +80,25 @@ class LayerBuilder:
             layer = layer / layer_counter[i]
         # Update it
         Layer.objects.bulk_update(layers, ['value'])
+
+    @staticmethod
+    def scale_values(layers=None):
+        """Scale data with value [0, 1]"""
+        if not layers:
+            layers = Layer.objects.select_related('metric').all()
+        metrics = Metric.objects.all()
+        # For each metric find min and max values
+        for metric in metrics:
+            layers_by_metric = layers.filter(metric=metric).order_by('value')
+            min_value = layers_by_metric.first()
+            max_value = layers_by_metric.last()
+            for layer in layers_by_metric:
+                layer.value = (layer.value - min_value)/max_value
+        # Update scaled values data
+        Layer.objects.bulk_update(layers, ['value'])
+
+    @staticmethod
+    def get_quartiles():
+        """Find and return all layer objects in the first or in the third quartile (1th - when metric optmin_config =
+        False, and 3th - when metric optim_config - True) """
+        ...
