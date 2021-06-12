@@ -90,6 +90,7 @@ class Connection(models.Model):
     device = models.ForeignKey(
         to=Device,
         null=False,
+        on_delete=models.CASCADE,
         verbose_name='Устройство'
     )
     user = models.ForeignKey(
