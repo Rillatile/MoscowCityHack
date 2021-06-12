@@ -133,11 +133,11 @@ class LayerBuilder:
                 start_point[1] + lon_step*((point.lon - start_point[1])//lon_step)
             ]
             # Search a layer with such coordinates
+            # todo: округление!!!!
             for k, layer in enumerate(layers):
-                if (layer.lat == left_up_point[0]) and (layer.lon == left_up_point[1]) and (
-                        layer.metric == point.metric):
+                if (layer.lat == left_up_point[0]) and (layer.lon == left_up_point[1]) and (layer.metric == point.metric):
                     break
-            # layers[i].value++
+            # Increment layers[i].value
             layers[k].value = layers[k].value + point.processed_value
             layer_counter[k] = layer_counter[k] + 1
         # Count average Layer value
@@ -158,13 +158,12 @@ class LayerBuilder:
             layers_by_metric = layers.filter(metric=metric).order_by('value')
             min_value = layers_by_metric.first()
             max_value = layers_by_metric.last()
-            for layer in layers_by_metric:
-                layer.value = (layer.value - min_value)/max_value
-        # Update scaled values data
-        Layer.objects.bulk_update(layers, ['value'])
+            for i, layer in enumerate(layers_by_metric):
+                # (value - min) / (max - min)
+                layers_by_metric[i].value = (layers_by_metric[i].value-min_value) / (max_value-min_value)
+            # Update scaled values data
+            Layer.objects.bulk_update(layers_by_metric, ['value'])
 
     @staticmethod
-    def get_quartiles():
-        """Find and return all layer objects in the first or in the third quartile (1th - when metric optmin_config =
-        False, and 3th - when metric optim_config - True) """
+    def get_general_layers():
         ...
