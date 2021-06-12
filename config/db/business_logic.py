@@ -1,6 +1,4 @@
-from dateutil.parser import parse
 from datetime import datetime
-from os import access
 
 from django.conf import settings
 from django.db import connection
@@ -40,7 +38,6 @@ class CoordinateDataWrapper:
 class OrganizationDataWrapper:
     def save(data):
         for organization in data['result']:
-            print(organization)
             od = OrganizationData(
                 name=organization['name'].lower(),
                 address=organization['address'].lower(),
@@ -54,7 +51,15 @@ class OrganizationDataWrapper:
 
 class RentalPriceDataWrapper:
     def save(data):
-        pass
+        for rent in data['result']:
+            rpd = RentalPriceDataWrapper(
+                price=rent['price'],
+                address=rent['address'].lower(),
+                lon=str(rent['point']['lng']).replace(',', '.'),
+                lat=str(rent['point']['lat']).replace(',', '.')
+            )
+
+            rpd.save()
 
 
 class HousePopulationDataWrapper:
@@ -70,21 +75,21 @@ class ConnectionsLogWrapper:
                     raw_data = line.split(',')
                     device = Device.objects.get_or_create(
                         device_hash=raw_data[2]
-                    )
+                    )[0]
                     user = None
                     if raw_data[3] != 'null':
                         user = User.objects.get_or_create(
                             user_hash=raw_data[3]
-                        )
+                        )[0]
                     wap = WAP.objects.get_or_create(
                         mac=raw_data[1],
                         lat=raw_data[4].replace(
                             '(', '').replace('"', '').strip(),
                         lon=raw_data[5].replace(')', '').replace(
                             '"', '').strip(),
-                    )
+                    )[0]
                     connection = Connection(
-                        datetime=parse(raw_data[0]),
+                        datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
                         access_point=wap,
                         device=device,
                         user=user
