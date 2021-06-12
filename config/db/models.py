@@ -156,9 +156,6 @@ class Metric(models.Model):
     OPERATION_CHOICES = (
         ('sum', 'Sum'),
         ('ave', 'Average'),
-        ('min', 'Minimum'),
-        ('max', 'Maximum'),
-        ('med', 'Median'),
     )
     name = models.CharField(max_length=100)
     optim_config = models.BooleanField(default=False)
