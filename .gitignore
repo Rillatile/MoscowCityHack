@@ -94,4 +94,4 @@ local_settings.py
 db.sqlite3
 
 # Scripts
-set_envs.bat
+scripts/
