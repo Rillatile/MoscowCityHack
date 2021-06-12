@@ -25,14 +25,14 @@ class SendOrganizationDataView(APIView):
 
 
 class SendRentalPriceDataView(APIView):
-    rser_classes = [JSONParser]
+    parser_classes = [JSONParser]
 
     def post(self, request, format=None):
         return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
 
 
 class SendHousePopulationDataView(APIView):
-    rser_classes = [JSONParser]
+    parser_classes = [JSONParser]
 
     def post(self, request, format=None):
         return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
