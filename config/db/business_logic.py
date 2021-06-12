@@ -37,7 +37,6 @@ class CoordinateDataWrapper:
 class OrganizationDataWrapper:
     def save(data):
         for organization in data['result']:
-            print(organization)
             od = OrganizationData(
                 name=organization['name'].lower(),
                 address=organization['address'].lower(),
@@ -51,7 +50,15 @@ class OrganizationDataWrapper:
 
 class RentalPriceDataWrapper:
     def save(data):
-        pass
+        for rent in data['result']:
+            rpd = RentalPriceDataWrapper(
+                price=rent['price'],
+                address=rent['address'].lower(),
+                lon=str(rent['point']['lng']).replace(',', '.'),
+                lat=str(rent['point']['lat']).replace(',', '.')
+            )
+
+            rpd.save()
 
 
 class HousePopulationDataWrapper:
