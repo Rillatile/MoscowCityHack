@@ -41,32 +41,42 @@ class HousePopulationDataWrapper:
 class LayerBuilder:
     @staticmethod
     def group_coord_by_sectors(coordinate_data=None):
+        start_point = settings.EDGE_LEFT_UP
+        end_point = settings.EDGE_RIGHT_DOWN
+        lat_step = settings.LAT_DISTANCE
+        lon_step = settings.LON_DISTANCE
+
         if not coordinate_data:
             coordinate_data = CoordinateData.objects.select_related('metric').all()
         # Create layer sectors
         metrics = Metric.objects.all()
-        # todo: round the last border to up
-        layers = [Layer.objects.create(lat=i, lon=j, metric=m, value=0)
-                  for i in range(settings.EDGE_RIGHT_DOWN[0],
-                                 settings.EDGE_LEFT_UP[0],
-                                 settings.LAT_DISTANCE)
-                  for j in range(settings.EDGE_RIGHT_DOWN[1],
-                                 settings.EDGE_LEFT_UP[1],
-                                 settings.LON_DISTANCE)
-                  for m in metrics]
+        # Check if the step more than area width or height
+        if lat_step > start_point[0]-end_point[0]:
+            return -1
+        if lon_step > end_point[1]-start_point[1]:
+            return -1
+        # Check if an area cannot be separated into whole number of sectors - then expand the area
+        if lat_step * ((start_point[0]-end_point[0])//lat_step) != start_point[0]-end_point[0]:
+            end_point[0] = start_point[0] - lat_step*((start_point[0] - end_point[0])//lat_step + 1)
+        if lon_step * ((end_point[1]-start_point[1])//lon_step) != end_point[1]-start_point[1]:
+            end_point[1] = start_point[0] + lon_step*((end_point[1] - start_point[1])//lon_step + 1)
+
+        layers = [
+            Layer.objects.create(lat=i, lon=j, metric=m, value=0)
+            for i in range(start_point[0], end_point[0], -lat_step)
+            for j in range(start_point[1], end_point[1], lon_step)
+            for m in metrics
+        ]
         layer_counter = [0 for _ in range(len(layers))]
         # Count layers[i].value
         for point in coordinate_data:
             # Count where the point is placed (section start coordinates)
-            # !!!!!
-            # ((point - start)//step)*step + start
-            left_up_point = [settings.EDGE_RIGHT_DOWN +
-                             settings.LAT_DISTANCE * (
-                                         (point.lat - settings.EDGE_RIGHT_DOWN[0]) // settings.LAT_DISTANCE),
-                             settings.EDGE_RIGHT_DOWN +
-                             settings.LON_DISTANCE * (
-                                         (point.lon - settings.EDGE_RIGHT_DOWN[1]) // settings.LON_DISTANCE),
-                             ]
+            # start + ((point - start)//step)*step for lon coord
+            # start - ((start - point)//step)*step for lat coord
+            left_up_point = [
+                start_point[0] - lat_step*((start_point[0] - point.lat)//lat_step),
+                start_point[1] + lon_step*((point.lon - start_point[1])//lon_step)
+            ]
             # Search a layer with such coordinates
             for k, layer in enumerate(layers):
                 if (layer.lat == left_up_point[0]) and (layer.lon == left_up_point[1]) and (
@@ -77,8 +87,8 @@ class LayerBuilder:
             layer_counter[k] = layer_counter[k] + 1
         # Count average Layer value
         # There is chance to "play" with data - you can use median, min, max etc values instead of average
-        for i, layer in enumerate(layers):
-            layer = layer / layer_counter[i]
+        for i, _ in enumerate(layers):
+            layers[i] = layers[i].value / layer_counter[i]
         # Update it
         Layer.objects.bulk_update(layers, ['value'])
 
@@ -103,3 +113,4 @@ class LayerBuilder:
         """Find and return all layer objects in the first or in the third quartile (1th - when metric optmin_config =
         False, and 3th - when metric optim_config - True) """
         ...
+
