@@ -249,11 +249,11 @@ class LayerBuilder:
         # For each metric find min and max values
         for metric in metrics:
             layers_by_metric = layers.filter(metric=metric).order_by('value')
-            min_value = layers_by_metric.first()
-            max_value = layers_by_metric.last()
+            min_value = layers_by_metric.first().value
+            max_value = layers_by_metric.last().value
             for i, layer in enumerate(layers_by_metric):
                 # (value - min) / (max - min)
-                layers_by_metric[i].value = (layers_by_metric[i].value-min_value) / (max_value-min_value)
+                layers_by_metric[i].value = (layers_by_metric[i].value - min_value) / (max_value-min_value)
             # Update scaled values data
             Layer.objects.bulk_update(layers_by_metric, ['value'])
 
