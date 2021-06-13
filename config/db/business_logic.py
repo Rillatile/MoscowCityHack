@@ -8,8 +8,10 @@ from .models import (
     Connection,
     CoordinateData,
     Device,
+    FlatsData,
     OrganizationData,
     User,
+    RentalData,
     WAP,
     Layer,
     Metric,
@@ -54,7 +56,7 @@ class OrganizationDataWrapper:
 class RentalPriceDataWrapper:
     def save(data):
         for rent in data['result']:
-            rpd = RentalPriceDataWrapper(
+            rpd = RentalData(
                 price=rent['price'],
                 address=rent['address'].lower(),
                 lon=str(rent['point']['lng']).replace(',', '.'),
@@ -67,7 +69,7 @@ class RentalPriceDataWrapper:
 class HousePopulationDataWrapper:
     def save(data):
         for house in data['result']:
-            hpd = HousePopulationDataWrapper(
+            hpd = FlatsData(
                 flats=house['flats'],
                 address=house['address'].lower(),
                 lon=str(house['point']['lon']).replace(',', '.'),
@@ -80,7 +82,8 @@ class HousePopulationDataWrapper:
 class ConnectionsLogWrapper:
     def parse_connections_log_file(path):
         with open(path, 'r') as f:
-            for i, line in enumerate(f):
+            lines = f.readlines()
+            for i, line in enumerate(lines):
                 if i != 0:
                     raw_data = line.split(',')
                     device = Device.objects.get_or_create(
