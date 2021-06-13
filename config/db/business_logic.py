@@ -122,19 +122,22 @@ class ConnectionsLogWrapper:
         with open(path, 'r') as f:
             connections_db = []
             lines = f.readlines()
+            devices = Device.objects.all()
+            users = User.objects.all()
+            waps = WAP.objects.all()
 
             for i, line in enumerate(lines):
                 if i % 100 == 0:
                     print(i)
                 if i != 0:
                     raw_data = line.split(',')
-                    c = Connection(
-                        datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
-                        access_point=WAP.objects.get(mac=raw_data[1]),
-                        device=Device.objects.get(device_hash=raw_data[2]),
-                        user=None if raw_data[3] == 'null' else User.objects.get(user_hash=raw_data[3])
-                    )
-                    c.save()
+                    # c = Connection(
+                    #     datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
+                    #     access_point=WAP.objects.get(mac=raw_data[1]),
+                    #     device=Device.objects.get(device_hash=raw_data[2]),
+                    #     user=None if raw_data[3] == 'null' else User.objects.get(user_hash=raw_data[3])
+                    # )
+                    # c.save()
                     # connections_db.append(
                     #     Connection(
                     #         datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
