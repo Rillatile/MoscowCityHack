@@ -67,8 +67,8 @@ class ParseConnectionsLogFileView(APIView):
 
     def post(self, request, format=None):
         try:
-            ConnectionsLogWrapper.parse_connections_log_file(
-                request.data['path'])
+            # ConnectionsLogWrapper.parse_connections_log_file(
+            #     request.data['path'])
             ConnectionsLogWrapper.parse_connections(request.data['path'])
             return Response(status=status.HTTP_200_OK)
         except:
