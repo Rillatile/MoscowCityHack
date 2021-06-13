@@ -131,6 +131,13 @@ class ConnectionsLogWrapper:
                     print(i)
                 if i != 0:
                     raw_data = line.split(',')
+                    c = Connection(
+                        datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
+                        user=None if raw_data[3] == 'null' else list(filter(lambda u: u.user_hash == raw_data[3]), users)[0],
+                        device=list(filter(lambda d: d.device_hash == raw_data[2], devices))[0],
+                        access_point=list(filter(lambda ap: ap.mac == raw_data[1]), waps)[0]
+                    )
+                    c.save()
                     # c = Connection(
                     #     datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
                     #     access_point=WAP.objects.get(mac=raw_data[1]),
