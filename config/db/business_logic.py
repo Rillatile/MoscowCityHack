@@ -282,6 +282,9 @@ class LayerBuilder:
 
     @staticmethod
     def get_general_layers(layers=None):
+        for dt in dts:
+            dt.objects.all().delete()
+
         start_point = settings.EDGE_LEFT_UP
         end_point = settings.EDGE_RIGHT_DOWN
         lat_step = settings.LAT_DISTANCE
@@ -293,18 +296,15 @@ class LayerBuilder:
         activities = Activity.objects.all()
         lats = np.arange(start_point[0], end_point[0], -lat_step)
         lons = np.arange(start_point[1], end_point[1], lon_step)
-        print(type(lats[0]))
-
-        for a_i, activity in enumerate(activities):
-            zero_act_layer = []
-            for i in lats:
-                for j in lons:
-                    zero_act_layer.append(
-                        dts[activity.id - 1].objects.create(lat=round(i, 6), lon=round(j, 6), metric=metrics[0],
-                                                            value=0))
 
         for i, activity in enumerate(activities):
-            act_layers = zero_act_layer
+            act_layers = []
+
+            for k in lats:
+                for j in lons:
+                    act_layers.append(
+                        dts[i].objects.create(lat=round(k, 6), lon=round(j, 6), metric=metrics[0], value=0, activity=activity)
+                    )
             for metric in metrics:
                 for j, act_layer in enumerate(act_layers):
                     # находим слой с такой же метрикой и такой же стартовой точкой в общей таблице по слоям
@@ -316,7 +316,7 @@ class LayerBuilder:
                 for j, _ in enumerate(act_layers):
                     act_layers[j].value = act_layers[j].value / metrics.count()
                     act_layers[j].activity = activity
-            dts[i].objects.bulk_update(layers, ['value'])
+            dts[i].objects.bulk_update(act_layers, ['value'])
 
 
 class ActivitiesWrapper:
