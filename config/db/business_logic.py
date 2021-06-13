@@ -72,9 +72,9 @@ class RentalPriceDataWrapper:
             rpd.save()
 
             CoordinateDataWrapper.save({
-                'lat': rpd['lat'],
-                'lon': rpd['lon'],
-                'value': rpd['price'],
+                'lat': str(rent['point']['lat']).replace(',', '.'),
+                'lon': str(rent['point']['lng']).replace(',', '.'),
+                'value': rent['price'],
                 'metric': Metric.objects.get(name='платежеспособность')
             })
 
@@ -92,9 +92,9 @@ class HousePopulationDataWrapper:
             hpd.save()
 
             CoordinateDataWrapper.save({
-                'lat': hpd['lat'],
-                'lon': hpd['lon'],
-                'value': hpd['flats'],
+                'lat': str(house['point']['lat']).replace(',', '.'),
+                'lon': str(house['point']['lon']).replace(',', '.'),
+                'value': house['flats'],
                 'metric': Metric.objects.get(name='население')
             })
             
