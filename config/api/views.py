@@ -95,10 +95,15 @@ class HeatMapView(APIView):
 
     def get(self, request, *args, **kwargs):
         act_id = kwargs['act_id']
-        data = HeatMapWrapper.get_heatmap(act_id)
+        data = HeatMapWrapper.get_heatmap(act_id)   # вид деятельности не учитывается!
         return JsonResponse({'data': data}, safe=False)
 
 
 def generate_zero_layers(request, on_delete):
     LayerBuilder.generate_zero_layers(None, on_delete)
     return HttpResponse('done', status=status.HTTP_200_OK)
+
+
+def process_coordinates(request):
+    data = LayerBuilder.process_coordinates()
+    return JsonResponse({'data': data}, safe=False)

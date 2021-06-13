@@ -130,6 +130,13 @@ class ConnectionsLogWrapper:
 
 
 class LayerBuilder:
+    def process_coordinates():
+        # Generate empty layers with deleting old layers in db
+        LayerBuilder.generate_layers(on_delete=True, is_zero=True)
+        # Fill that layers with coordinates data
+        LayerBuilder.group_coord_by_sectors()
+        return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
+
     def generate_layers(metrics=None, on_delete=False, is_zero=False):
         if on_delete:
             Layer.objects.all().delete()
@@ -164,12 +171,15 @@ class LayerBuilder:
                         value = 0
                     layers.append(Layer.objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=value))
 
-    def group_coord_by_sectors(coordinate_data=None):
+    def group_coord_by_sectors(coordinate_data=None, layers=None):
         start_point = settings.EDGE_LEFT_UP
         lat_step = settings.LAT_DISTANCE
         lon_step = settings.LON_DISTANCE
-        layers = LayerBuilder.generate_zero_layers()
+        if not layers:
+            layers = Layer.objects.all()
         layer_counter = [0 for _ in range(len(layers))]
+        if not coordinate_data:
+            coordinate_data = CoordinateData.objects.all()
         # Count layers[i].value
         for point in coordinate_data:
             # Count where the point is placed (section start coordinates)
@@ -189,11 +199,15 @@ class LayerBuilder:
             layer_counter[k] = layer_counter[k] + 1
         # Count average Layer value
         # There is chance to "play" with data - you can use median, min, max etc values instead of average
-        for i, _ in enumerate(layers):
+        for i, layer in enumerate(layers):
             if point.metric.generalizing_oper == 'ave':
-                layers[i] = layers[i].value / layer_counter[i]
-        # Update it
+                old_value = layer.value
+                try:
+                    layers[i].value = layers[i].value / layer_counter[i]
+                except ZeroDivisionError:
+                    layers[i].value = 0
         Layer.objects.bulk_update(layers, ['value'])
+        # Layer.objects.filter(id=i).update(total_star=total_rate)
 
     @staticmethod
     def scale_values(layers=None):
@@ -230,6 +244,6 @@ class HeatMapWrapper:
         layers = LayerBuilder.generate_layers(is_zero=is_zero)
         return layers
 
-    def get_heatmap(act_id):
+    def get_heatmap(act_id):    # генерация случайной карты
         LayerBuilder.generate_layers(is_zero=False, on_delete=True)
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
