@@ -137,8 +137,15 @@ class ConnectionsLogWrapper:
                             # user=None if raw_data[3] == 'null' else list(filter(lambda u: u.user_hash == raw_data[3]), users_db)[0]
                         )
                     )
+
+                    if len(connections_db) == 5000:
+                        Connection.objects.bulk_create(connections_db)
+                        connections_db.clear()
             
-            Connection.objects.bulk_create(connections_db)
+            # Connection.objects.bulk_create(connections_db)
+
+            if len(connections_db) > 0:
+                Connection.objects.bulk_create(connections_db)
 
             print(datetime.now() - st)
 
