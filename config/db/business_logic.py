@@ -116,7 +116,13 @@ class OfficesDataWrapper:
             od.save()
 
     def some(number=30):
-        all_offices = list(OfficesData.objects.all().values())
+        start_point = settings.EDGE_LEFT_UP
+        end_point = settings.EDGE_RIGHT_DOWN
+        lat_step = settings.LAT_DISTANCE
+        lon_step = settings.LON_DISTANCE
+
+        all_offices = list(OfficesData.objects.filter(lat__lte=start_point[0], lat__gte=end_point[0]+lat_step,
+                                                      lon__gte=start_point[1], lon__lte=end_point[1]-lon_step).values())
         return all_offices[:number]
 
 
@@ -422,15 +428,21 @@ class HeatMapWrapper:
         data = {'metrics': [], 'general_value': 0}
         activity = Activity.objects.get(id=act_id)
         j = next(i for i, x in enumerate(table_names) if x == activity.table_name)
-        data['general'] = (dts[j].objects.get(id=j)).value
+
+        data = dts[j].objects.get(id=sector_id)
+        datas = Layer.objects.all()
+        for i, d in enumerate(datas):
+            if (d.lat == data.lat) and (d.lon == data.lon):
+                break
+
+        data['general'] = (dts[j].objects.get(id=sector_id)).value
         config = activity.config
         metrics = Metric.objects.all()
-        for i, _ in enumerate(metrics):
-            value_from_layers_table = (Layer.objects.get(id=sector_id)).value
-            value = value_from_layers_table*config[i]
+        for k, _ in enumerate(metrics):
+            value_from_layers_table = (Layer.objects.get(id=i)).value
+            value = value_from_layers_table*config[k]
             data['metrics'].append({'metric_id': _.id, 'value': value})
         return data
-
 
 
 class SubwayWrapper:
