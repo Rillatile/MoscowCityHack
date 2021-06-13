@@ -443,7 +443,7 @@ class HeatMapWrapper:
             value = value_from_layers_table*config[k]
             data['metrics'].append({'metric_id': _.id, 'value': value})
 
-        data['general'] = (dts[j].objects.get(id=sector_id)).value
+        data['general'] = data.value
         return data
 
 
