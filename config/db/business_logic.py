@@ -268,31 +268,30 @@ class LayerBuilder:
             layers = Layer.objects.select_related('metric').all()
         metrics = Metric.objects.all()
         activities = Activity.objects.all()
-        lats = np.arange(start_point[0], end_point[0], -lat_step).tolist()
-        lons = np.arange(start_point[1], end_point[1], lon_step).tolist()
+        lats = np.arange(start_point[0], end_point[0], -lat_step)
+        lons = np.arange(start_point[1], end_point[1], lon_step)
+        print(type(lats[0]))
 
         for a_i, activity in enumerate(activities):
             zero_act_layer = []
             for i in lats:
                 for j in lons:
-                    for m in metrics:
-                        zero_act_layer.append(
-                            dts[j].objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=0, activity_id=1))
+                    zero_act_layer.append(dts[activity.id-1].objects.create(lat=round(i, 6), lon=round(j, 6), metric=metrics[0], value=0))
 
         for i, activity in enumerate(activities):
             act_layers = zero_act_layer
             for metric in metrics:
                 for j, act_layer in enumerate(act_layers):
                     # находим слой с такой же метрикой и такой же стартовой точкой в общей таблице по слоям
-                    layer = layers.filter(metric=metric, lat=act_layer.lat , lon=act_layer)
+                    layer = layers.filter(metric=metric, lat=act_layer.lat, lon=act_layer.lon).first()
                     # суммируем исходное значение со значением в секторе по метрике с учетом коэффициента конкретного
                     # вида деятельности
-                    act_layers[j].value = act_layers[j].value + activity.config[metric.id] * layer.value
+                    act_layers[j].value = act_layers[j].value + activity.config[metric.id-1] * layer.value
                 # найдем среднее арифметическое для каждого сектора общей карты
                 for j, _ in enumerate(act_layers):
                     act_layers[j].value = act_layers[j].value / metrics.count()
                     act_layers[j].activity = activity
-            dts[i].objects.bulk_update(layers, ['value', 'activity'])
+            dts[i].objects.bulk_update(layers, ['value'])
 
 
 class ActivitiesWrapper:

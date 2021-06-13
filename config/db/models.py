@@ -270,20 +270,20 @@ class BeautySaloonLayers(Layer):
 
 # Public catering Scope
 class CafeLayers(Layer):
-    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
+    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
 
 
 class BarLayers(Layer):
-    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
+    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
 
 
 # Household chemicals Scope
 class СosmeticsStoreLayers(Layer):
-    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
+    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
 
 
 class HouseChemicLayers(Layer):
-    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
+    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
 
 
 # Health Scope
