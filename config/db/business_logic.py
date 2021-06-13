@@ -438,8 +438,9 @@ class HeatMapWrapper:
         data['general'] = (dts[j].objects.get(id=sector_id)).value
         config = activity.config
         metrics = Metric.objects.all()
+        layers = Layer.objects.all()
         for k, _ in enumerate(metrics):
-            value_from_layers_table = (Layer.objects.get(id=i)).value
+            value_from_layers_table = layers[i].value
             value = value_from_layers_table*config[k]
             data['metrics'].append({'metric_id': _.id, 'value': value})
         return data
