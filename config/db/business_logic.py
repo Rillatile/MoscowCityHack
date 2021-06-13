@@ -268,8 +268,8 @@ class LayerBuilder:
             layers = Layer.objects.select_related('metric').all()
         metrics = Metric.objects.all()
         activities = Activity.objects.all()
-        lats = np.arange(start_point[0], end_point[0], -lat_step)
-        lons = np.arange(start_point[1], end_point[1], lon_step)
+        lats = np.arange(start_point[0], end_point[0], -lat_step).tolist()
+        lons = np.arange(start_point[1], end_point[1], lon_step).tolist()
 
         for a_i, activity in enumerate(activities):
             zero_act_layer = []
