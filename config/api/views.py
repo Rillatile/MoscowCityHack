@@ -97,8 +97,8 @@ class HeatMapView(APIView):
     def get(self, request, *args, **kwargs):
         act_id = request.GET['act_id']
         # todo: get layers info via concrete activity table
-        # data = HeatMapWrapper.get_rand_heatmap(act_id)   # вид деятельности не учитывается!
-        data = []
+        data = HeatMapWrapper.get_from_db(act_id)   # вид деятельности не учитывается!
+        # data = []
         return JsonResponse({'data': data}, safe=False)
 
 

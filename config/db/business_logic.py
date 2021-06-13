@@ -298,6 +298,8 @@ class HeatMapWrapper:
         LayerBuilder.generate_layers(is_zero=False, on_delete=True)
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
+    def get_from_db(act_id):
+        ...
 
 class SubwayWrapper:
     def save(data):
