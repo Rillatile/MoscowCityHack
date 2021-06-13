@@ -64,7 +64,15 @@ class RentalPriceDataWrapper:
 
 class HousePopulationDataWrapper:
     def save(data):
-        pass
+        for house in data['result']:
+            hpd = HousePopulationDataWrapper(
+                flats=house['flats'],
+                address=house['address'].lower(),
+                lon=str(house['point']['lon']).replace(',', '.'),
+                lat=str(house['point']['lat']).replace(',', '.')
+            )
+
+            hpd.save()
 
 
 class ConnectionsLogWrapper:
