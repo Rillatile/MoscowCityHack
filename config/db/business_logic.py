@@ -121,33 +121,40 @@ class ConnectionsLogWrapper:
         st = datetime.now()
         with open(path, 'r') as f:
             connections_db = []
-            # lines = f.readlines()
+            lines = f.readlines()
 
-            for i, line in enumerate(f):
+            for i, line in enumerate(lines):
                 if i % 100 == 0:
                     print(i)
                 if i != 0:
                     raw_data = line.split(',')
-                    connections_db.append(
-                        Connection(
-                            datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
-                            access_point=WAP.objects.get(mac=raw_data[1]),
-                            device=Device.objects.get(device_hash=raw_data[2]),
-                            user=None if raw_data[3] == 'null' else User.objects.get(user_hash=raw_data[3])
-                            # access_point=list(filter(lambda ap: ap.mac == raw_data[1]), waps_db)[0],
-                            # device=list(filter(lambda d: d.device_hash == raw_data[2], devices_db))[0],
-                            # user=None if raw_data[3] == 'null' else list(filter(lambda u: u.user_hash == raw_data[3]), users_db)[0]
-                        )
+                    c = Connection(
+                        datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
+                        access_point=WAP.objects.get(mac=raw_data[1]),
+                        device=Device.objects.get(device_hash=raw_data[2]),
+                        user=None if raw_data[3] == 'null' else User.objects.get(user_hash=raw_data[3])
                     )
+                    c.save()
+                    # connections_db.append(
+                    #     Connection(
+                    #         datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
+                    #         access_point=WAP.objects.get(mac=raw_data[1]),
+                    #         device=Device.objects.get(device_hash=raw_data[2]),
+                    #         user=None if raw_data[3] == 'null' else User.objects.get(user_hash=raw_data[3])
+                    #         access_point=list(filter(lambda ap: ap.mac == raw_data[1]), waps_db)[0],
+                    #         device=list(filter(lambda d: d.device_hash == raw_data[2], devices_db))[0],
+                    #         user=None if raw_data[3] == 'null' else list(filter(lambda u: u.user_hash == raw_data[3]), users_db)[0]
+                    #     )
+                    # )
 
-                    if len(connections_db) == 5000:
-                        Connection.objects.bulk_create(connections_db)
-                        connections_db.clear()
+                    # if len(connections_db) == 5000:
+                    #     Connection.objects.bulk_create(connections_db)
+                    #     connections_db.clear()
             
-            # Connection.objects.bulk_create(connections_db)
+            # # Connection.objects.bulk_create(connections_db)
 
-            if len(connections_db) > 0:
-                Connection.objects.bulk_create(connections_db)
+            # if len(connections_db) > 0:
+            #     Connection.objects.bulk_create(connections_db)
 
             print(datetime.now() - st)
 
