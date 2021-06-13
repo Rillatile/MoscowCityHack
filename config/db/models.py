@@ -166,7 +166,28 @@ class RentalData(models.Model):
         blank=False,
         verbose_name='Широта'
     )
-
+    
+class FlatsData(models.Model):
+    flats = models.IntegerField(
+        verbose_name='Количество квартир'
+    )
+    address = models.CharField(
+        max_length=255,
+        null=False,
+        blank=False
+    )
+    lon = models.CharField(
+        max_length=20,
+        null=False,
+        blank=False,
+        verbose_name='Долгота'
+    )
+    lat = models.CharField(
+        max_length=20,
+        null=False,
+        blank=False,
+        verbose_name='Широта'
+    )
 
 class Metric(models.Model):
     """
