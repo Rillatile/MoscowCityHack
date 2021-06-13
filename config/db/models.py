@@ -99,6 +99,7 @@ class Activity(models.Model):
     name = models.CharField(max_length=100)
     scope = models.ForeignKey(to=Scope, on_delete=models.CASCADE)
     config = ArrayField(models.FloatField())
+    table_name = models.CharField(max_length=50, null=True)
 
     def __repr__(self):
         return self.name
@@ -156,7 +157,8 @@ class RentalData(models.Model):
         blank=False,
         verbose_name='Широта'
     )
-    
+
+
 class FlatsData(models.Model):
     flats = models.IntegerField(
         verbose_name='Количество квартир'
@@ -178,7 +180,8 @@ class FlatsData(models.Model):
         blank=False,
         verbose_name='Широта'
     )
-    
+
+
 class OfficesData(models.Model):
     price = models.IntegerField(
         verbose_name='Цена аренды'
@@ -209,6 +212,7 @@ class OfficesData(models.Model):
         blank=False,
         verbose_name='Широта'
     )
+
 
 class Metric(models.Model):
     """
@@ -247,39 +251,48 @@ class Layer(models.Model):
 
 
 # Food retail Scope
-# todo: add two or more activity types to Food retail Scope
+class SupermarketLayers(Layer):
+    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
+
+
+class BakeryLayers(Layer):
+    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
+
 
 # Beauty Scope
 class BarbershopLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
-# todo: add one activity type to Beauty Scope
+    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
+
+
+class BeautySaloonLayers(Layer):
+    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
 
 
 # Public catering Scope
 class CafeLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
 
 
 class BarLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
 
 
 # Household chemicals Scope
 class СosmeticsStoreLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
 
 
 class HouseChemicLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
 
 
 # Health Scope
 class DentistryLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
 
 
 class ClinicLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
 
 
 class Subway(models.Model):
