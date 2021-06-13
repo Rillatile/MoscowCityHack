@@ -241,8 +241,8 @@ class SubwayWrapper:
     def save(data):
         for subway in data['result']:
             s = Subway(
-                lon=str(subway['point']['lng']).replace(',', '.'),
-                lat=str(subway['point']['lat']).replace(',', '.')
+                lon=str(subway['lon']).replace(',', '.'),
+                lat=str(subway['lat']).replace(',', '.')
             )
 
             s.save()
