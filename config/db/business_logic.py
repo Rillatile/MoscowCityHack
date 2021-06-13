@@ -209,7 +209,6 @@ class LayerBuilder:
                 except ZeroDivisionError:
                     layers[i].value = 0
         Layer.objects.bulk_update(layers, ['value'])
-        # Layer.objects.filter(id=i).update(total_star=total_rate)
 
     @staticmethod
     def scale_values(layers=None):

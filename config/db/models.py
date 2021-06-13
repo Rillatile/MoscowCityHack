@@ -172,7 +172,8 @@ class RentalData(models.Model):
         blank=False,
         verbose_name='Широта'
     )
-    
+
+
 class FlatsData(models.Model):
     flats = models.IntegerField(
         verbose_name='Количество квартир'
@@ -194,7 +195,8 @@ class FlatsData(models.Model):
         blank=False,
         verbose_name='Широта'
     )
-    
+
+
 class OfficesData(models.Model):
     price = models.IntegerField(
         verbose_name='Цена аренды'
@@ -226,6 +228,7 @@ class OfficesData(models.Model):
         verbose_name='Широта'
     )
 
+
 class Metric(models.Model):
     """
     Metric model - base info about analysed data.
@@ -246,6 +249,7 @@ class Metric(models.Model):
     #     if self.id == other.id:
     #         return True
     #     return False
+
 
 
 # *** Models of concrete activities that uses a service ***
