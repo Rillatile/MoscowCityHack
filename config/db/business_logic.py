@@ -3,6 +3,8 @@ from datetime import datetime
 from django.conf import settings
 
 from django.db import connection
+from django.db.models import F
+
 from .models import (
     Activity,
     Connection,
@@ -192,5 +194,11 @@ class ActivitiesWrapper:
 
     def all():
         activities = Activity.objects.select_related('scope')
-        data = list(activities.values('scope_id', 'scope__name', 'id', 'name'))
+        data = list(activities.values('id', 'name', 'scope_id', scope_name=F('scope__name')))
         return data
+
+
+class HeatMapWrapper:
+
+    def get_heat_map():
+        ...

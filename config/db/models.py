@@ -107,7 +107,7 @@ class Connection(models.Model):
 class Scope(models.Model):
     name = models.CharField(max_length=100)
 
-    def __str__(self):
+    def __repr__(self):
         return self.name
 
 
@@ -115,6 +115,9 @@ class Activity(models.Model):
     name = models.CharField(max_length=100)
     scope = models.ForeignKey(to=Scope, on_delete=models.CASCADE)
     config = ArrayField(models.FloatField())
+
+    def __repr__(self):
+        return self.name
 
 
 class OrganizationData(models.Model):
