@@ -194,6 +194,37 @@ class FlatsData(models.Model):
         blank=False,
         verbose_name='Широта'
     )
+    
+class OfficesData(models.Model):
+    price = models.IntegerField(
+        verbose_name='Цена аренды'
+    )
+    area = models.FloatField(
+       verbose_name='Площадь'
+    )
+    address = models.CharField(
+        max_length=255,
+        null=False,
+        blank=False
+    )
+    link = models.CharField(
+        max_length=255,
+        null=False,
+        blank=False,
+        verbose_name='Ссылка на объявление'
+    )
+    lon = models.CharField(
+        max_length=20,
+        null=False,
+        blank=False,
+        verbose_name='Долгота'
+    )
+    lat = models.CharField(
+        max_length=20,
+        null=False,
+        blank=False,
+        verbose_name='Широта'
+    )
 
 class Metric(models.Model):
     """
