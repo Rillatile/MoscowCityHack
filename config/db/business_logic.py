@@ -115,6 +115,10 @@ class OfficesDataWrapper:
 
             od.save()
 
+    def some(number=30):
+        ...
+    # todo:
+
 
 class ConnectionsLogWrapper:
     def parse_connections(path):
@@ -401,7 +405,7 @@ class HeatMapWrapper:
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
     def get_from_db(act_id):  # достать карту для выбранной активности
-        j = next(i for i, x in enumerate(table_names) if x == (Activity.objects.get(id=id)).table_name)
+        j = next(i for i, x in enumerate(table_names) if x == (Activity.objects.get(id=act_id)).table_name)
         return list(dts[j].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
     def get_sector_data(sector_id, act_id):

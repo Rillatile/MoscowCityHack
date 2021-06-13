@@ -11,7 +11,8 @@ from .views import (
     HeatMapView,
     generate_zero_layers,
     process_data,
-    get_sector_data
+    get_sector_data,
+    get_some_offices
 )
 
 
@@ -35,4 +36,5 @@ urlpatterns = [
     # Process coordinates data and building layers by metrics
     path('process_data', process_data, name='process_data'), # !!!!!!! наполнение моих табличек
     path('send_subway_data', SubwayView.as_view(), name='send_subway_data'),
+    path('get_some_offices', get_some_offices, name='get_some_offices'),
 ]

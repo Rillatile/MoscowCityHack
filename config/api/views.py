@@ -134,3 +134,6 @@ def get_sector_data(request):
     act_id = int(request.GET['act_id'])
     return JsonResponse({'data': HeatMapWrapper.get_sector_data(sector_id, act_id)}, safe=False)
 
+
+def get_some_offices(request):
+    return JsonResponse({'data': OfficesDataWrapper.some()})
