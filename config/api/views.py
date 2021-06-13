@@ -95,10 +95,8 @@ class ActivitiesView(APIView):
 class HeatMapView(APIView):
 
     def get(self, request, *args, **kwargs):
-        act_id = request.GET['act_id']
-        # todo: get layers info via concrete activity table
-        data = HeatMapWrapper.get_from_db(act_id)   # вид деятельности не учитывается!
-        # data = []
+        act_id = int(request.GET['act_id'])
+        data = HeatMapWrapper.get_from_db(act_id)
         return JsonResponse({'data': data}, safe=False)
 
 
@@ -128,3 +126,10 @@ class SubwayView(APIView):
             return Response(status=status.HTTP_201_CREATED)
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def get_sector_data(request):
+    sector_id = int(request.GET['sector_id'])
+    act_id = int(request.GET['act_id'])
+    return JsonResponse({'data': HeatMapWrapper.get_sector_data(sector_id, act_id)}, safe=False)
+

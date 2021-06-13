@@ -10,7 +10,8 @@ from .views import (
     ActivitiesView,
     HeatMapView,
     generate_zero_layers,
-    process_data
+    process_data,
+    get_sector_data
 )
 
 
@@ -27,6 +28,8 @@ urlpatterns = [
          name='parse_connections_log_file'),
     path('get_activities', ActivitiesView.as_view(), name='get_activities'),
     path('heatmap', HeatMapView.as_view(), name='heatmap'),
+    # get sector data with metric id
+    path('get_sector_data', get_sector_data, name='get_sector_data'),
     path('heatmap/generate/<int:on_delete>', generate_zero_layers, name='generate_heatmap'),
     path('send_offices_data', SendOfficesDataView.as_view(), name='send_offices_data'),
     # Process coordinates data and building layers by metrics

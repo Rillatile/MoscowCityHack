@@ -203,6 +203,7 @@ class ConnectionsLogWrapper:
 dts = [BarLayers, CafeLayers, DentistryLayers, BarbershopLayers, BeautySaloonLayers, SupermarketLayers, BakeryLayers]
 table_names = ['BarLayers', 'CafeLayers', 'DentistryLayers', 'BarbershopLayers', 'BeautySaloonLayers', 'SupermarketLayers', 'BakeryLayers']
 
+
 class LayerBuilder:
     def process_coordinates():
         # Generate empty layers with deleting old layers in db
@@ -358,9 +359,22 @@ class HeatMapWrapper:
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
     def get_from_db(act_id):  # достать карту для выбранной активности
-        id = int(act_id)
         j = next(i for i, x in enumerate(table_names) if x == (Activity.objects.get(id=id)).table_name)
         return list(dts[j].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
+
+    def get_sector_data(sector_id, act_id):
+        data = {'metrics': [], 'general_value': 0}
+        activity = Activity.objects.get(id=act_id)
+        j = next(i for i, x in enumerate(table_names) if x == activity.table_name)
+        data['general'] = (dts[j].objects.get(id=j)).value
+        config = activity.config
+        metrics = Metric.objects.all()
+        for i, _ in enumerate(metrics):
+            value_from_layers_table = (Layer.objects.get(id=sector_id)).value
+            value = value_from_layers_table*config[i]
+            data['metrics'].append({'metric_id': _.id, 'value': value})
+        return data
+
 
 
 class SubwayWrapper:
