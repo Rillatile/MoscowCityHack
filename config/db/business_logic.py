@@ -7,6 +7,7 @@ from .models import (
     Connection,
     CoordinateData,
     Device,
+    FlatsData,
     OrganizationData,
     User,
     WAP,
@@ -65,7 +66,7 @@ class RentalPriceDataWrapper:
 class HousePopulationDataWrapper:
     def save(data):
         for house in data['result']:
-            hpd = HousePopulationDataWrapper(
+            hpd = FlatsData(
                 flats=house['flats'],
                 address=house['address'].lower(),
                 lon=str(house['point']['lon']).replace(',', '.'),

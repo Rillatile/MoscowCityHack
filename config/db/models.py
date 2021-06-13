@@ -230,35 +230,35 @@ class Layer(models.Model):
 
 # Beauty Scope
 class BarbershopLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
 # todo: add one activity type to Beauty Scope
 
 
 # Public catering Scope
 class CafeLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
 
 
 class BarLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
 
 
 # Household chemicals Scope
 class СosmeticsStoreLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
 
 
 class HouseChemicLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
 
 
 # Health Scope
 class DentistryLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
 
 
 class ClinicLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE)
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
 
 
 # Services Scope
