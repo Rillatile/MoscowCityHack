@@ -128,12 +128,12 @@ class ConnectionsLogWrapper:
                     devices.add(raw_data[2])
                     if raw_data[3] != 'null':
                         users.add(raw_data[3])
-                    if raw_data[1] not in waps.keys:
-                        waps[raw_data[1]]['lat'] = raw_data[4].replace('(', '').replace('"', '').strip()
-                        waps[raw_data[1]]['lon'] = raw_data[5].replace(')', '').replace('"', '').strip()
+                    # if raw_data[1] not in waps.keys:
+                    #     waps[raw_data[1]]['lat'] = raw_data[4].replace('(', '').replace('"', '').strip()
+                    #     waps[raw_data[1]]['lon'] = raw_data[5].replace(')', '').replace('"', '').strip()
             print(len(devices))
             print(len(users))
-            print(len(waps))
+            # print(len(waps))
             print(datetime.now() - st)
                     # device = Device.objects.get_or_create(
                     #     device_hash=raw_data[2]
