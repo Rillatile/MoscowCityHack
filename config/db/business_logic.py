@@ -303,7 +303,7 @@ class LayerBuilder:
             for k in lats:
                 for j in lons:
                     act_layers.append(
-                        dts[i].objects.create(lat=round(k, 6), lon=round(j, 6), metric=metrics[0], value=0, activity=activity)
+                        dts[i].objects.create(lat=round(k, 6), lon=round(j, 6), metric=metrics[0], value=0, activity_id=activity.id)
                     )
             for metric in metrics:
                 for j, act_layer in enumerate(act_layers):
