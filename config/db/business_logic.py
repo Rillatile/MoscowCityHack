@@ -267,11 +267,11 @@ class LayerBuilder:
         # For each metric find min and max values
         for metric in metrics:
             layers_by_metric = layers.filter(metric=metric).order_by('value')
-            min_value = layers_by_metric.first()
-            max_value = layers_by_metric.last()
+            min_value = layers_by_metric.first().value
+            max_value = layers_by_metric.last().value
             for i, layer in enumerate(layers_by_metric):
                 # (value - min) / (max - min)
-                layers_by_metric[i].value = (layers_by_metric[i].value-min_value) / (max_value-min_value)
+                layers_by_metric[i].value = (layers_by_metric[i].value - min_value) / (max_value-min_value)
             # Update scaled values data
             Layer.objects.bulk_update(layers_by_metric, ['value'])
 
@@ -284,10 +284,10 @@ class LayerBuilder:
 
         if not layers:
             layers = Layer.objects.select_related('metric').all()
-        metrics = Metric.objetcs.all()
+        metrics = Metric.objects.all()
         activities = Activity.objects.all()
-        lats = np.arange(start_point[0], end_point[0], -lat_step)
-        lons = np.arange(start_point[1], end_point[1], lon_step)
+        lats = np.arange(start_point[0], end_point[0], -lat_step).tolist()
+        lons = np.arange(start_point[1], end_point[1], lon_step).tolist()
 
         for a_i, activity in enumerate(activities):
             zero_act_layer = []
@@ -295,8 +295,7 @@ class LayerBuilder:
                 for j in lons:
                     for m in metrics:
                         zero_act_layer.append(
-                            dts[j].objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=0,
-                                                   activity_id=1))
+                            dts[j].objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=0, activity_id=1))
 
         for i, activity in enumerate(activities):
             act_layers = zero_act_layer
@@ -332,7 +331,7 @@ class HeatMapWrapper:
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
     def get_from_db(act_id):        # достать карту для выбранной активности
-        return list(dts[act_id].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
+        return list(dts[int(act_id)].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
 
 class SubwayWrapper:
