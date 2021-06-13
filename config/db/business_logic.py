@@ -1,5 +1,6 @@
 from os import name
 import numpy as np
+import redis
 
 from datetime import datetime
 
@@ -115,34 +116,48 @@ class OfficesDataWrapper:
 
 class ConnectionsLogWrapper:
     def parse_connections_log_file(path):
+        st = datetime.now()
         with open(path, 'r') as f:
+            devices = set()
+            users = set()
             lines = f.readlines()
+            waps = {}
             for i, line in enumerate(lines):
                 if i != 0:
                     raw_data = line.split(',')
-                    device = Device.objects.get_or_create(
-                        device_hash=raw_data[2]
-                    )[0]
-                    user = None
+                    devices.add(raw_data[2])
                     if raw_data[3] != 'null':
-                        user = User.objects.get_or_create(
-                            user_hash=raw_data[3]
-                        )[0]
-                    wap = WAP.objects.get_or_create(
-                        mac=raw_data[1],
-                        lat=raw_data[4].replace(
-                            '(', '').replace('"', '').strip(),
-                        lon=raw_data[5].replace(')', '').replace(
-                            '"', '').strip(),
-                    )[0]
-                    connection = Connection(
-                        datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
-                        access_point=wap,
-                        device=device,
-                        user=user
-                    )
+                        users.add(raw_data[3])
+                    # if raw_data[1] not in waps.keys:
+                    #     waps[raw_data[1]]['lat'] = raw_data[4].replace('(', '').replace('"', '').strip()
+                    #     waps[raw_data[1]]['lon'] = raw_data[5].replace(')', '').replace('"', '').strip()
+            print(len(devices))
+            print(len(users))
+            # print(len(waps))
+            print(datetime.now() - st)
+                    # device = Device.objects.get_or_create(
+                    #     device_hash=raw_data[2]
+                    # )[0]
+                    # user = None
+                    # if raw_data[3] != 'null':
+                    #     user = User.objects.get_or_create(
+                    #         user_hash=raw_data[3]
+                    #     )[0]
+                    # wap = WAP.objects.get_or_create(
+                    #     mac=raw_data[1],
+                    #     lat=raw_data[4].replace(
+                    #         '(', '').replace('"', '').strip(),
+                    #     lon=raw_data[5].replace(')', '').replace(
+                    #         '"', '').strip(),
+                    # )[0]
+                    # connection = Connection(
+                    #     datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
+                    #     access_point=wap,
+                    #     device=device,
+                    #     user=user
+                    # )
 
-                    connection.save()
+                    # connection.save()
 
 dts = [BakeryLayers, SupermarketLayers, DentistryLayers, BeautySaloonLayers, CafeLayers, BarLayers]
 
