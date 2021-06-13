@@ -10,7 +10,7 @@ from .views import (
     ActivitiesView,
     HeatMapView,
     generate_zero_layers,
-    process_coordinates
+    process_data
 )
 
 
@@ -30,6 +30,6 @@ urlpatterns = [
     path('heatmap/generate/<int:on_delete>', generate_zero_layers, name='generate_heatmap'),
     path('send_offices_data', SendOfficesDataView.as_view(), name='send_offices_data'),
     # Process coordinates data and building layers by metrics
-    path('process_coordinates', process_coordinates, name='process_coordinates'),
+    path('process_data', process_data, name='process_data'), # !!!!!!! наполнение моих табличек
     path('send_subway_data', SubwayView.as_view(), name='send_subway_data'),
 ]

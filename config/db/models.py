@@ -236,7 +236,6 @@ class Metric(models.Model):
     #     return False
 
 
-
 # *** Models of concrete activities that uses a service ***
 class Layer(models.Model):
     metric = models.ForeignKey(
@@ -252,39 +251,48 @@ class Layer(models.Model):
 
 
 # Food retail Scope
-# todo: add two or more activity types to Food retail Scope
+class SupermarketLayers(Layer):
+    activity = models.OneToOneField(to='Activity', null=True)
+
+
+class BakeryLayers(Layer):
+    activity = models.OneToOneField(to='Activity', null=True)
+
 
 # Beauty Scope
 class BarbershopLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
-# todo: add one activity type to Beauty Scope
+    activity = models.OneToOneField(to='Activity', null=True)
+
+
+class BeautySaloonLayers(Layer):
+    activity = models.OneToOneField(to='Activity', null=True)
 
 
 # Public catering Scope
 class CafeLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.OneToOneField(to='Activity', null=True)
 
 
 class BarLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.OneToOneField(to='Activity', null=True)
 
 
 # Household chemicals Scope
 class СosmeticsStoreLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.OneToOneField(to='Activity', null=True)
 
 
 class HouseChemicLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.OneToOneField(to='Activity', null=True)
 
 
 # Health Scope
 class DentistryLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.ForeignKey(to='Activity', null=True)
 
 
 class ClinicLayers(Layer):
-    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
+    activity = models.ForeignKey(to='Activity', null=True)
 
 
 class Subway(models.Model):

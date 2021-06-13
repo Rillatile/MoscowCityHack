@@ -23,7 +23,7 @@ from .models import (
     Layer,
     Metric,
     Scope,
-    Subway
+    Subway, BarLayers, CafeLayers, BakeryLayers, SupermarketLayers, DentistryLayers, BeautySaloonLayers
 )
 
 
@@ -151,7 +151,7 @@ class LayerBuilder:
         LayerBuilder.generate_layers(on_delete=True, is_zero=True)
         # Fill that layers with coordinates data
         LayerBuilder.group_coord_by_sectors()
-        return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
+        return Layer.objects.select_related('metric').all()
 
     def generate_layers(metrics=None, on_delete=False, is_zero=False):
         if on_delete:
@@ -242,15 +242,50 @@ class LayerBuilder:
             Layer.objects.bulk_update(layers_by_metric, ['value'])
 
     @staticmethod
-    def get_general_layers():
-        ...
+    def get_general_layers(layers=None):
+        start_point = settings.EDGE_LEFT_UP
+        end_point = settings.EDGE_RIGHT_DOWN
+        lat_step = settings.LAT_DISTANCE
+        lon_step = settings.LON_DISTANCE
+
+        dts = [BakeryLayers, SupermarketLayers, DentistryLayers, BeautySaloonLayers, CafeLayers, BarLayers]
+        if not layers:
+            layers = Layer.objects.select_related('metric').all()
+        metrics = Metric.objetcs.all()
+        activities = Activity.objects.all()
+        lats = np.arange(start_point[0], end_point[0], -lat_step)
+        lons = np.arange(start_point[1], end_point[1], lon_step)
+
+        for a_i, activity in enumerate(activities):
+            zero_act_layer = []
+            for i in lats:
+                for j in lons:
+                    for m in metrics:
+                        zero_act_layer.append(
+                            dts[j].objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=0,
+                                                   activity_id=1))
+
+        for i, activity in enumerate(activities):
+            act_layers = zero_act_layer
+            for metric in metrics:
+                for j, act_layer in enumerate(act_layers):
+                    # находим слой с такой же метрикой и такой же стартовой точкой в общей таблице по слоям
+                    layer = layers.filter(metric=metric, lat=act_layer.lat , lon=act_layer)
+                    # суммируем исходное значение со значением в секторе по метрике с учетом коэффициента конкретного
+                    # вида деятельности
+                    act_layers[j].value = act_layers[j].value + activity.config[metric.id] * layer.value
+                # найдем среднее арифметическое для каждого сектора общей карты
+                for j, _ in enumerate(act_layers):
+                    act_layers[j].value = act_layers[j].value / metrics.count()
+                    act_layers[j].activity = activity
+            dts[i].objects.bulk_update(layers, ['value', 'activity'])
 
 
 class ActivitiesWrapper:
 
     def all():
         activities = Activity.objects.select_related('scope')
-        data = list(activities.values('id', 'name', 'scope_id', scope_name=F('scope__name')))
+        data = list(activities.values('id', 'name', 'scope_id', 'config', scope_name=F('scope__name')))
         return data
 
 
@@ -259,7 +294,7 @@ class HeatMapWrapper:
         layers = LayerBuilder.generate_layers(is_zero=is_zero)
         return layers
 
-    def get_heatmap(act_id):    # генерация случайной карты
+    def get_rand_heatmap(act_id):    # генерация случайной карты
         LayerBuilder.generate_layers(is_zero=False, on_delete=True)
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 

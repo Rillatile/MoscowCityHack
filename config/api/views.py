@@ -96,7 +96,9 @@ class HeatMapView(APIView):
 
     def get(self, request, *args, **kwargs):
         act_id = request.GET['act_id']
-        data = HeatMapWrapper.get_heatmap(act_id)   # вид деятельности не учитывается!
+        # todo: get layers info via concrete activity table
+        # data = HeatMapWrapper.get_rand_heatmap(act_id)   # вид деятельности не учитывается!
+        data = []
         return JsonResponse({'data': data}, safe=False)
 
 
@@ -105,9 +107,16 @@ def generate_zero_layers(request, on_delete):
     return HttpResponse('done', status=status.HTTP_200_OK)
 
 
-def process_coordinates(request):
-    data = LayerBuilder.process_coordinates()
-    return JsonResponse({'data': data}, safe=False)
+# Режим работы 1 - полная генерация данных:
+#  - предварительное удаление данных из бд
+#  - группировка точечных данных
+#  - построение слоев по метрикам и по секциям
+#  - построение общих слоев для каждого вида деятельности
+def process_data(request):
+    data = LayerBuilder.process_coordinates()       # out - сгруппированные точки CoordinateData по секциям и метрикам
+    data = LayerBuilder.scale_values(data)          # out - слои с приведенными значениями
+    LayerBuilder.get_general_layers(data)           # построить слой с обощенными метриками
+    return HttpResponse('done')
 
 
 class SubwayView(APIView):
