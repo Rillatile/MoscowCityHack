@@ -10,6 +10,7 @@ from .models import (
     FlatsData,
     OrganizationData,
     User,
+    RentalData,
     WAP,
     Layer,
     Metric
@@ -53,7 +54,7 @@ class OrganizationDataWrapper:
 class RentalPriceDataWrapper:
     def save(data):
         for rent in data['result']:
-            rpd = RentalPriceDataWrapper(
+            rpd = RentalData(
                 price=rent['price'],
                 address=rent['address'].lower(),
                 lon=str(rent['point']['lng']).replace(',', '.'),
