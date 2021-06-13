@@ -163,9 +163,12 @@ class ConnectionsLogWrapper:
                     connections_db.append(
                         Connection(
                             datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
-                            access_point=list(filter(lambda ap: ap.mac == raw_data[1]), waps_db)[0],
-                            device=list(filter(lambda d: d.device_hash == raw_data[2], devices_db))[0],
-                            user=None if raw_data[3] == 'null' else list(filter(lambda u: u.user_hash == raw_data[3]), users_db)[0]
+                            access_point=WAP.objects.get(mac=raw_data[1]),
+                            device=Device.objects.get(device_hash=raw_data[2]),
+                            user=None if raw_data[3] == 'null' else User.objects.get(user_hash=raw_data[3])
+                            # access_point=list(filter(lambda ap: ap.mac == raw_data[1]), waps_db)[0],
+                            # device=list(filter(lambda d: d.device_hash == raw_data[2], devices_db))[0],
+                            # user=None if raw_data[3] == 'null' else list(filter(lambda u: u.user_hash == raw_data[3]), users_db)[0]
                         )
                     )
             
