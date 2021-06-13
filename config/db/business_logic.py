@@ -314,7 +314,7 @@ class HeatMapWrapper:
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
     def get_from_db(act_id):        # достать карту для выбранной активности
-        return list(dts[act_id].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
+        return list(dts[int(act_id)].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
 
 class SubwayWrapper:
