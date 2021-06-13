@@ -4,7 +4,8 @@ from .views import (
     SendCoordinateDataView,
     SendHousePopulationDataView,
     SendOrganizationDataView,
-    SendRentalPriceDataView
+    SendRentalPriceDataView,
+    ActivitiesView
 )
 
 
@@ -19,4 +20,5 @@ urlpatterns = [
          name='send_rental_price_data'),
     path('parse_connections_log_file', ParseConnectionsLogFileView.as_view(),
          name='parse_connections_log_file'),
+    path('get_activities', ActivitiesView.as_view(), name='get_activities')
 ]

@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
@@ -8,7 +9,8 @@ from db.business_logic import (
     CoordinateDataWrapper,
     HousePopulationDataWrapper,
     OrganizationDataWrapper,
-    RentalPriceDataWrapper
+    RentalPriceDataWrapper,
+    ActivitiesWrapper
 )
 
 
@@ -66,3 +68,11 @@ class ParseConnectionsLogFileView(APIView):
             return Response(status=status.HTTP_200_OK)
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ActivitiesView(APIView):
+
+    def get(self, request):
+        data = ActivitiesWrapper.all()
+        return JsonResponse({'data': data}, safe=False)
+

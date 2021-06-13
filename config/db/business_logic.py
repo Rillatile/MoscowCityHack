@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.conf import settings
+
 from django.db import connection
 from .models import (
     Activity,
@@ -11,7 +12,8 @@ from .models import (
     User,
     WAP,
     Layer,
-    Metric
+    Metric,
+    Scope
 )
 
 
@@ -181,3 +183,11 @@ class LayerBuilder:
     @staticmethod
     def get_general_layers():
         ...
+
+
+class ActivitiesWrapper:
+
+    def all():
+        activities = Activity.objects.select_related('scope')
+        data = list(activities.values('scope_id', 'scope__name', 'id', 'name'))
+        return data

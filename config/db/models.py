@@ -107,6 +107,9 @@ class Connection(models.Model):
 class Scope(models.Model):
     name = models.CharField(max_length=100)
 
+    def __str__(self):
+        return self.name
+
 
 class Activity(models.Model):
     name = models.CharField(max_length=100)
