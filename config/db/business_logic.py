@@ -425,7 +425,7 @@ class HeatMapWrapper:
         return list(dts[j].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
     def get_sector_data(sector_id, act_id):
-        data = {'metrics': [], 'general_value': 0}
+        data1 = {'metrics': [], 'general_value': 0}
         activity = Activity.objects.get(id=act_id)
         j = next(i for i, x in enumerate(table_names) if x == activity.table_name)
 
@@ -441,10 +441,10 @@ class HeatMapWrapper:
         for k, _ in enumerate(metrics):
             value_from_layers_table = layers[i].value
             value = value_from_layers_table*config[k]
-            data['metrics'].append({'metric_id': _.id, 'value': value})
+            data1['metrics'].append({'metric_id': _.id, 'value': value})
 
-        data['general'] = data.value
-        return data
+        data1['general'] = data.value
+        return data1
 
 
 class SubwayWrapper:
