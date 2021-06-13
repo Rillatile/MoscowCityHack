@@ -121,9 +121,9 @@ class ConnectionsLogWrapper:
         st = datetime.now()
         with open(path, 'r') as f:
             connections_db = []
-            lines = f.readlines()
+            # lines = f.readlines()
 
-            for i, line in enumerate(lines):
+            for i, line in enumerate(f):
                 if i != 0:
                     raw_data = line.split(',')
                     connections_db.append(
