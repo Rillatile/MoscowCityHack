@@ -276,7 +276,10 @@ class LayerBuilder:
             max_value = layers_by_metric.last().value
             for i, layer in enumerate(layers_by_metric):
                 # (value - min) / (max - min)
-                layers_by_metric[i].value = (layers_by_metric[i].value - min_value) / (max_value - min_value)
+                try:
+                    layers_by_metric[i].value = (layers_by_metric[i].value - min_value) / (max_value - min_value)
+                except ZeroDivisionError:
+                    layers_by_metric[i].value = 0
             # Update scaled values data
             Layer.objects.bulk_update(layers_by_metric, ['value'])
 
@@ -293,7 +296,7 @@ class LayerBuilder:
         if not layers:
             layers = Layer.objects.select_related('metric').all()
         metrics = Metric.objects.all()
-        activities = Activity.objects.all()
+        activities = list(Activity.objects.all().values('id', 'config', 'name'))
         lats = np.arange(start_point[0], end_point[0], -lat_step)
         lons = np.arange(start_point[1], end_point[1], lon_step)
 
@@ -303,7 +306,7 @@ class LayerBuilder:
             for k in lats:
                 for j in lons:
                     act_layers.append(
-                        dts[i].objects.create(lat=round(k, 6), lon=round(j, 6), metric=metrics[0], value=0, activity_id=activity.id)
+                        dts[i].objects.create(lat=round(k, 6), lon=round(j, 6), metric=metrics[0], value=0)
                     )
             for metric in metrics:
                 for j, act_layer in enumerate(act_layers):
@@ -311,11 +314,10 @@ class LayerBuilder:
                     layer = layers.filter(metric=metric, lat=act_layer.lat, lon=act_layer.lon).first()
                     # суммируем исходное значение со значением в секторе по метрике с учетом коэффициента конкретного
                     # вида деятельности
-                    act_layers[j].value = act_layers[j].value + activity.config[metric.id - 1] * layer.value
+                    act_layers[j].value = act_layers[j].value + activity['config'][metric.id - 1] * layer.value
                 # найдем среднее арифметическое для каждого сектора общей карты
                 for j, _ in enumerate(act_layers):
                     act_layers[j].value = act_layers[j].value / metrics.count()
-                    act_layers[j].activity = activity
             dts[i].objects.bulk_update(act_layers, ['value'])
 
 
