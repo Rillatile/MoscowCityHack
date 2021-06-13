@@ -266,7 +266,7 @@ class LayerBuilder:
 
         if not layers:
             layers = Layer.objects.select_related('metric').all()
-        metrics = Metric.objetcs.all()
+        metrics = Metric.objects.all()
         activities = Activity.objects.all()
         lats = np.arange(start_point[0], end_point[0], -lat_step)
         lons = np.arange(start_point[1], end_point[1], lon_step)
