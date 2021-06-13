@@ -89,12 +89,12 @@ class OfficesDataWrapper:
     def save(data):
         for office in data['result']:
             od = OfficesData(
-                price=od['price'],
-                area=od['area'],
-                link=od['url'],
-                address=od['address'].lower(),
-                lon=str(od['point']['lng']).replace(',', '.'),
-                lat=str(od['point']['lat']).replace(',', '.')
+                price=office['price'],
+                area=office['area'],
+                link=office['url'],
+                address=office['address'].lower(),
+                lon=str(office['point']['lng']).replace(',', '.'),
+                lat=str(office['point']['lat']).replace(',', '.')
             )
 
             od.save()
