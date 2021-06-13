@@ -80,7 +80,8 @@ class HousePopulationDataWrapper:
 class ConnectionsLogWrapper:
     def parse_connections_log_file(path):
         with open(path, 'r') as f:
-            for i, line in enumerate(f):
+            lines = f.readlines()
+            for i, line in enumerate(lines):
                 if i != 0:
                     raw_data = line.split(',')
                     device = Device.objects.get_or_create(
