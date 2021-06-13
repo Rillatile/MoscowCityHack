@@ -13,7 +13,8 @@ from db.business_logic import (
     RentalPriceDataWrapper,
     ActivitiesWrapper,
     HeatMapWrapper,
-    LayerBuilder
+    LayerBuilder,
+    SubwayWrapper
 )
 
 
@@ -102,3 +103,14 @@ class HeatMapView(APIView):
 def generate_zero_layers(request, on_delete):
     LayerBuilder.generate_zero_layers(None, on_delete)
     return HttpResponse('done', status=status.HTTP_200_OK)
+
+
+class SubwayView(APIView):
+    parser_classes = [JSONParser]
+
+    def post(self, request, format=None):
+        try:
+            SubwayWrapper.save(request.data)
+            return Response(status=status.HTTP_201_CREATED)
+        except:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)

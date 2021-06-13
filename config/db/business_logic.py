@@ -15,12 +15,14 @@ from .models import (
     FlatsData,
     OfficesData,
     OrganizationData,
+    Subway,
     User,
     RentalData,
     WAP,
     Layer,
     Metric,
-    Scope
+    Scope,
+    Subway
 )
 
 
@@ -233,3 +235,14 @@ class HeatMapWrapper:
     def get_heatmap(act_id):
         LayerBuilder.generate_layers(is_zero=False, on_delete=True)
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
+
+
+class SubwayWrapper:
+    def save(data):
+        for subway in data['result']:
+            s = Subway(
+                lon=str(subway['point']['lng']).replace(',', '.'),
+                lat=str(subway['point']['lat']).replace(',', '.')
+            )
+
+            s.save()

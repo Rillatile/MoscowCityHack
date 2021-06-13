@@ -298,6 +298,21 @@ class ClinicLayers(Layer):
     activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True)
 
 
+class Subway(models.Model):
+    lon = models.CharField(
+        max_length=20,
+        null=False,
+        blank=False,
+        verbose_name='Долгота'
+    )
+    lat = models.CharField(
+        max_length=20,
+        null=False,
+        blank=False,
+        verbose_name='Широта'
+    )
+
+
 # Services Scope
 # todo: come up with at least two types of activities for this Scope
 # e.g.:

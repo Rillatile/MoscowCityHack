@@ -6,6 +6,7 @@ from .views import (
     SendOfficesDataView,
     SendOrganizationDataView,
     SendRentalPriceDataView,
+    SubwayView,
     ActivitiesView,
     HeatMapView,
     generate_zero_layers
@@ -27,4 +28,5 @@ urlpatterns = [
     path('heatmap/<int:act_id>', HeatMapView.as_view(), name='heatmap'),
     path('heatmap/generate/<int:on_delete>', generate_zero_layers, name='generate_heatmap'),
     path('send_offices_data', SendOfficesDataView.as_view(), name='send_offices_data'),
+    path('send_subway_data', SubwayView.as_view(), name='send_subway_data'),
 ]
