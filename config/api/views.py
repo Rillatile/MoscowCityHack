@@ -1,4 +1,3 @@
-from config.db.models import Connection
 from django.http import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.parsers import JSONParser
