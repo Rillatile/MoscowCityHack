@@ -99,6 +99,7 @@ class Activity(models.Model):
     name = models.CharField(max_length=100)
     scope = models.ForeignKey(to=Scope, on_delete=models.CASCADE)
     config = ArrayField(models.FloatField())
+    table_name = models.CharField(max_length=50)
 
     def __repr__(self):
         return self.name
