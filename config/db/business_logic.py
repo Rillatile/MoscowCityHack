@@ -148,10 +148,11 @@ class ConnectionsLogWrapper:
 
             for key in waps.keys():
                 waps_db.append(WAP(mac=key, lat=waps[key]['lat'], lon=waps[key]['lon']))
+            
+            Device.objects.bulk_create(devices_db)
+            User.objects.bulk_create(users_db)
+            WAP.objects.bulk_create(waps_db)
 
-            print(len(devices_db))
-            print(len(users_db))
-            print(len(waps_db))
             print(datetime.now() - st)         
                     # device = Device.objects.get_or_create(
                     #     device_hash=raw_data[2]
