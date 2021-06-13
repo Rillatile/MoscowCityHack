@@ -19,24 +19,8 @@ class CoordinateData(models.Model):
         blank=False,
         verbose_name='Широта'
     )
-    street = models.CharField(
-        max_length=255,
-        null=False,
-        blank=True,
-        verbose_name='Улица'
-    )
-    house = models.CharField(
-        max_length=10,
-        null=False,
-        blank=True,
-        verbose_name='Номер дома'
-    )
     metric = models.ForeignKey(
         to='Metric', on_delete=models.CASCADE, null=True)
-    raw_values = ArrayField(
-        models.FloatField(),
-        verbose_name='Необработанные значения'
-    )
     processed_value = models.FloatField()
 
 
