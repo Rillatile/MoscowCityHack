@@ -15,12 +15,14 @@ from .models import (
     FlatsData,
     OfficesData,
     OrganizationData,
+    Subway,
     User,
     RentalData,
     WAP,
     Layer,
     Metric,
-    Scope
+    Scope,
+    Subway
 )
 
 
@@ -87,12 +89,12 @@ class OfficesDataWrapper:
     def save(data):
         for office in data['result']:
             od = OfficesData(
-                price=od['price'],
-                area=od['area'],
-                link=od['url'],
-                address=od['address'].lower(),
-                lon=str(od['point']['lng']).replace(',', '.'),
-                lat=str(od['point']['lat']).replace(',', '.')
+                price=office['price'],
+                area=office['area'],
+                link=office['url'],
+                address=office['address'].lower(),
+                lon=str(office['point']['lng']).replace(',', '.'),
+                lat=str(office['point']['lat']).replace(',', '.')
             )
 
             od.save()
@@ -247,3 +249,14 @@ class HeatMapWrapper:
     def get_heatmap(act_id):    # генерация случайной карты
         LayerBuilder.generate_layers(is_zero=False, on_delete=True)
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
+
+
+class SubwayWrapper:
+    def save(data):
+        for subway in data['result']:
+            s = Subway(
+                lon=str(subway['lon']).replace(',', '.'),
+                lat=str(subway['lat']).replace(',', '.')
+            )
+
+            s.save()

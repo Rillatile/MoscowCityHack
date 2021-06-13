@@ -6,6 +6,7 @@ from .views import (
     SendOfficesDataView,
     SendOrganizationDataView,
     SendRentalPriceDataView,
+    SubwayView,
     ActivitiesView,
     HeatMapView,
     generate_zero_layers,
@@ -30,4 +31,5 @@ urlpatterns = [
     path('send_offices_data', SendOfficesDataView.as_view(), name='send_offices_data'),
     # Process coordinates data and building layers by metrics
     path('process_coordinates', process_coordinates, name='process_coordinates'),
+    path('send_subway_data', SubwayView.as_view(), name='send_subway_data'),
 ]
