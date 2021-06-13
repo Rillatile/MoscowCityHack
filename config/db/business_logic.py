@@ -144,6 +144,7 @@ class ConnectionsLogWrapper:
 
                     connection.save()
 
+dts = [BakeryLayers, SupermarketLayers, DentistryLayers, BeautySaloonLayers, CafeLayers, BarLayers]
 
 class LayerBuilder:
     def process_coordinates():
@@ -248,7 +249,6 @@ class LayerBuilder:
         lat_step = settings.LAT_DISTANCE
         lon_step = settings.LON_DISTANCE
 
-        dts = [BakeryLayers, SupermarketLayers, DentistryLayers, BeautySaloonLayers, CafeLayers, BarLayers]
         if not layers:
             layers = Layer.objects.select_related('metric').all()
         metrics = Metric.objetcs.all()
@@ -298,8 +298,9 @@ class HeatMapWrapper:
         LayerBuilder.generate_layers(is_zero=False, on_delete=True)
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
-    def get_from_db(act_id):
-        ...
+    def get_from_db(act_id):        # достать карту для выбранной активности
+        return list(dts[act_id].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
+
 
 class SubwayWrapper:
     def save(data):
