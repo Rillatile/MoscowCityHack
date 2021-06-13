@@ -435,7 +435,6 @@ class HeatMapWrapper:
             if (d.lat == data.lat) and (d.lon == data.lon):
                 break
 
-        data['general'] = (dts[j].objects.get(id=sector_id)).value
         config = activity.config
         metrics = Metric.objects.all()
         layers = Layer.objects.all()
@@ -443,6 +442,8 @@ class HeatMapWrapper:
             value_from_layers_table = layers[i].value
             value = value_from_layers_table*config[k]
             data['metrics'].append({'metric_id': _.id, 'value': value})
+
+        data['general'] = (dts[j].objects.get(id=sector_id)).value
         return data
 
 
