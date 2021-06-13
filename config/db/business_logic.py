@@ -117,6 +117,30 @@ class OfficesDataWrapper:
 
 
 class ConnectionsLogWrapper:
+    def parse_connections(path):
+        st = datetime.now()
+        with open(path, 'r') as f:
+            connections_db = []
+
+            for i, line in enumerate(f):
+                if i != 0:
+                    raw_data = line.split(',')
+                    connections_db.append(
+                        Connection(
+                            datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
+                            access_point=WAP.objects.get(mac=raw_data[1]),
+                            device=Device.objects.get(device_hash=raw_data[2]),
+                            user=None if raw_data[3] == 'null' else User.objects.get(user_hash=raw_data[3])
+                            # access_point=list(filter(lambda ap: ap.mac == raw_data[1]), waps_db)[0],
+                            # device=list(filter(lambda d: d.device_hash == raw_data[2], devices_db))[0],
+                            # user=None if raw_data[3] == 'null' else list(filter(lambda u: u.user_hash == raw_data[3]), users_db)[0]
+                        )
+                    )
+            
+            Connection.objects.bulk_create(connections_db)
+
+            print(datetime.now() - st)
+
     def parse_connections_log_file(path):
         st = datetime.now()
         with open(path, 'r') as f:
@@ -155,26 +179,26 @@ class ConnectionsLogWrapper:
             User.objects.bulk_create(users_db)
             WAP.objects.bulk_create(waps_db)
 
-            connections_db = []
+            # connections_db = []
 
-            for i, line in enumerate(lines):
-                if i != 0:
-                    raw_data = line.split(',')
-                    connections_db.append(
-                        Connection(
-                            datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
-                            access_point=WAP.objects.get(mac=raw_data[1]),
-                            device=Device.objects.get(device_hash=raw_data[2]),
-                            user=None if raw_data[3] == 'null' else User.objects.get(user_hash=raw_data[3])
-                            # access_point=list(filter(lambda ap: ap.mac == raw_data[1]), waps_db)[0],
-                            # device=list(filter(lambda d: d.device_hash == raw_data[2], devices_db))[0],
-                            # user=None if raw_data[3] == 'null' else list(filter(lambda u: u.user_hash == raw_data[3]), users_db)[0]
-                        )
-                    )
+            # for i, line in enumerate(lines):
+            #     if i != 0:
+            #         raw_data = line.split(',')
+            #         connections_db.append(
+            #             Connection(
+            #                 datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
+            #                 access_point=WAP.objects.get(mac=raw_data[1]),
+            #                 device=Device.objects.get(device_hash=raw_data[2]),
+            #                 user=None if raw_data[3] == 'null' else User.objects.get(user_hash=raw_data[3])
+            #                 access_point=list(filter(lambda ap: ap.mac == raw_data[1]), waps_db)[0],
+            #                 device=list(filter(lambda d: d.device_hash == raw_data[2], devices_db))[0],
+            #                 user=None if raw_data[3] == 'null' else list(filter(lambda u: u.user_hash == raw_data[3]), users_db)[0]
+            #             )
+            #         )
             
-            Connection.objects.bulk_create(connections_db)
+            # Connection.objects.bulk_create(connections_db)
 
-            print(datetime.now() - st)
+            # print(datetime.now() - st)
             # device = Device.objects.get_or_create(
             #     device_hash=raw_data[2]
             # )[0]
@@ -198,7 +222,8 @@ class ConnectionsLogWrapper:
             # )
 
             # connection.save()
-
+    
+    
 
 dts = [BarLayers, CafeLayers, DentistryLayers, BarbershopLayers, BeautySaloonLayers, SupermarketLayers, BakeryLayers]
 table_names = ['BarLayers', 'CafeLayers', 'DentistryLayers', 'BarbershopLayers', 'BeautySaloonLayers', 'SupermarketLayers', 'BakeryLayers']

@@ -1,3 +1,4 @@
+from config.db.models import Connection
 from django.http import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.parsers import JSONParser
@@ -69,6 +70,7 @@ class ParseConnectionsLogFileView(APIView):
         try:
             ConnectionsLogWrapper.parse_connections_log_file(
                 request.data['path'])
+            ConnectionsLogWrapper.parse_connections(request.data['path'])
             return Response(status=status.HTTP_200_OK)
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
