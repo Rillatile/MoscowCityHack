@@ -116,8 +116,8 @@ class OfficesDataWrapper:
             od.save()
 
     def some(number=30):
-        ...
-    # todo:
+        all_offices = list(OfficesData.objects.all().values())
+        return all_offices[:number]
 
 
 class ConnectionsLogWrapper:
