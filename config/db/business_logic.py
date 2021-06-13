@@ -1,3 +1,4 @@
+from os import name
 import numpy as np
 
 from datetime import datetime
@@ -31,10 +32,8 @@ class CoordinateDataWrapper:
         cd = CoordinateData(
             lat=data['lat'].replace(',', '.'),
             lon=data['lon'].replace(',', '.'),
-            street=data['street'].lower(),
-            house=data['house'].lower(),
-            raw_values=data['raw_values'],
-            processed_value=data['value']
+            processed_value=data['value'],
+            metric = data['metric']
         )
 
         cd.save()
@@ -72,6 +71,13 @@ class RentalPriceDataWrapper:
 
             rpd.save()
 
+            CoordinateDataWrapper.save({
+                'lat': rpd['lat'],
+                'lon': rpd['lon'],
+                'value': rpd['price'],
+                'metric': Metric.objects.get(name='платежеспособность')
+            })
+
 
 class HousePopulationDataWrapper:
     def save(data):
@@ -84,6 +90,13 @@ class HousePopulationDataWrapper:
             )
 
             hpd.save()
+
+            CoordinateDataWrapper.save({
+                'lat': hpd['lat'],
+                'lon': hpd['lon'],
+                'value': hpd['flats'],
+                'metric': Metric.objects.get(name='население')
+            })
             
 class OfficesDataWrapper:
     def save(data):
@@ -98,6 +111,7 @@ class OfficesDataWrapper:
             )
 
             od.save()
+
 
 class ConnectionsLogWrapper:
     def parse_connections_log_file(path):
