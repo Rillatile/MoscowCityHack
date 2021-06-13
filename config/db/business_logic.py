@@ -11,6 +11,7 @@ from .models import (
     CoordinateData,
     Device,
     FlatsData,
+    OfficesData,
     OrganizationData,
     User,
     RentalData,
@@ -79,7 +80,20 @@ class HousePopulationDataWrapper:
             )
 
             hpd.save()
+            
+class OfficesDataWrapper:
+    def save(data):
+        for office in data['result']:
+            od = OfficesData(
+                price=od['price'],
+                area=od['area'],
+                link=od['url'],
+                address=od['address'].lower(),
+                lon=str(od['point']['lng']).replace(',', '.'),
+                lat=str(od['point']['lat']).replace(',', '.')
+            )
 
+            od.save()
 
 class ConnectionsLogWrapper:
     def parse_connections_log_file(path):
