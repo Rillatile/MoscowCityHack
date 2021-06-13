@@ -88,5 +88,5 @@ class HeatMapView(APIView):
 
 
 def generate_zero_layers(request, on_delete):
-    layers = LayerBuilder.generate_zero_layers(None, on_delete)
+    LayerBuilder.generate_zero_layers(None, on_delete)
     return HttpResponse('done', status=status.HTTP_200_OK)

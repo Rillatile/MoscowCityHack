@@ -116,7 +116,7 @@ class ConnectionsLogWrapper:
 
 
 class LayerBuilder:
-    def generate_zero_layers(metrics=None, on_delete=False):
+    def generate_layers(metrics=None, on_delete=False, is_zero=False):
         if on_delete:
             Layer.objects.all().delete()
         start_point = settings.EDGE_LEFT_UP
@@ -144,11 +144,14 @@ class LayerBuilder:
         for i in lats:
             for j in lons:
                 for m in metrics:
-                    layers.append(Layer.objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=0))
+                    if not is_zero:
+                        value = np.random.random()
+                    else:
+                        value = 0
+                    layers.append(Layer.objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=value))
 
     def group_coord_by_sectors(coordinate_data=None):
         start_point = settings.EDGE_LEFT_UP
-        end_point = settings.EDGE_RIGHT_DOWN
         lat_step = settings.LAT_DISTANCE
         lon_step = settings.LON_DISTANCE
         layers = LayerBuilder.generate_zero_layers()
@@ -209,9 +212,10 @@ class ActivitiesWrapper:
 
 
 class HeatMapWrapper:
-    def generate_map():
-        LayerBuilder.generate_zero_layers()
-        return 1
+    def generate_map(is_zero=True):
+        layers = LayerBuilder.generate_layers(is_zero=is_zero)
+        return layers
 
     def get_heatmap(act_id):
-        return act_id #HeatMapWrapper.generate_map()
+        LayerBuilder.generate_layers(is_zero=False, on_delete=True)
+        return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
