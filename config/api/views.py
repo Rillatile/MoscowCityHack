@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
@@ -10,7 +10,9 @@ from db.business_logic import (
     HousePopulationDataWrapper,
     OrganizationDataWrapper,
     RentalPriceDataWrapper,
-    ActivitiesWrapper
+    ActivitiesWrapper,
+    HeatMapWrapper,
+    LayerBuilder
 )
 
 
@@ -76,3 +78,15 @@ class ActivitiesView(APIView):
         data = ActivitiesWrapper.all()
         return JsonResponse({'data': data}, safe=False)
 
+
+class HeatMapView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        act_id = kwargs['act_id']
+        data = HeatMapWrapper.get_heatmap(act_id)
+        return JsonResponse({'data': data}, safe=False)
+
+
+def generate_zero_layers(request, on_delete):
+    layers = LayerBuilder.generate_zero_layers(None, on_delete)
+    return HttpResponse('done', status=status.HTTP_200_OK)

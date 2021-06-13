@@ -5,7 +5,9 @@ from .views import (
     SendHousePopulationDataView,
     SendOrganizationDataView,
     SendRentalPriceDataView,
-    ActivitiesView
+    ActivitiesView,
+    HeatMapView,
+    generate_zero_layers
 )
 
 
@@ -20,5 +22,7 @@ urlpatterns = [
          name='send_rental_price_data'),
     path('parse_connections_log_file', ParseConnectionsLogFileView.as_view(),
          name='parse_connections_log_file'),
-    path('get_activities', ActivitiesView.as_view(), name='get_activities')
+    path('get_activities', ActivitiesView.as_view(), name='get_activities'),
+    path('heatmap/<int:act_id>', HeatMapView.as_view(), name='heatmap'),
+    path('heatmap/generate/<int:on_delete>', generate_zero_layers, name='generate_heatmap'),
 ]

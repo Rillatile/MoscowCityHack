@@ -1,3 +1,5 @@
+import numpy as np
+
 from datetime import datetime
 
 from django.conf import settings
@@ -114,34 +116,42 @@ class ConnectionsLogWrapper:
 
 
 class LayerBuilder:
-    @staticmethod
-    def group_coord_by_sectors(coordinate_data=None):
+    def generate_zero_layers(metrics=None, on_delete=False):
+        if on_delete:
+            Layer.objects.all().delete()
         start_point = settings.EDGE_LEFT_UP
         end_point = settings.EDGE_RIGHT_DOWN
         lat_step = settings.LAT_DISTANCE
         lon_step = settings.LON_DISTANCE
 
-        if not coordinate_data:
-            coordinate_data = CoordinateData.objects.select_related('metric').all()
-        # Create layer sectors
-        metrics = Metric.objects.all()
+        if not metrics:
+            metrics = Metric.objects.all()
+
         # Check if the step more than area width or height
-        if lat_step > start_point[0]-end_point[0]:
+        if lat_step > start_point[0] - end_point[0]:
             return -1
-        if lon_step > end_point[1]-start_point[1]:
+        if lon_step > end_point[1] - start_point[1]:
             return -1
         # Check if an area cannot be separated into whole number of sectors - then expand the area
-        if lat_step * ((start_point[0]-end_point[0])//lat_step) != start_point[0]-end_point[0]:
-            end_point[0] = start_point[0] - lat_step*((start_point[0] - end_point[0])//lat_step + 1)
-        if lon_step * ((end_point[1]-start_point[1])//lon_step) != end_point[1]-start_point[1]:
-            end_point[1] = start_point[0] + lon_step*((end_point[1] - start_point[1])//lon_step + 1)
+        if lat_step * ((start_point[0] - end_point[0]) // lat_step) != start_point[0] - end_point[0]:
+            end_point[0] = start_point[0] - lat_step * ((start_point[0] - end_point[0]) // lat_step + 1)
+        if lon_step * ((end_point[1] - start_point[1]) // lon_step) != end_point[1] - start_point[1]:
+            end_point[1] = start_point[1] + lon_step * ((end_point[1] - start_point[1]) // lon_step + 1)
 
-        layers = [
-            Layer.objects.create(lat=i, lon=j, metric=m, value=0)
-            for i in range(start_point[0], end_point[0], -lat_step)
-            for j in range(start_point[1], end_point[1], lon_step)
-            for m in metrics
-        ]
+        lats = np.arange(start_point[0], end_point[0], -lat_step)
+        lons = np.arange(start_point[1], end_point[1], lon_step)
+        layers = []
+        for i in lats:
+            for j in lons:
+                for m in metrics:
+                    layers.append(Layer.objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=0))
+
+    def group_coord_by_sectors(coordinate_data=None):
+        start_point = settings.EDGE_LEFT_UP
+        end_point = settings.EDGE_RIGHT_DOWN
+        lat_step = settings.LAT_DISTANCE
+        lon_step = settings.LON_DISTANCE
+        layers = LayerBuilder.generate_zero_layers()
         layer_counter = [0 for _ in range(len(layers))]
         # Count layers[i].value
         for point in coordinate_data:
@@ -199,6 +209,9 @@ class ActivitiesWrapper:
 
 
 class HeatMapWrapper:
+    def generate_map():
+        LayerBuilder.generate_zero_layers()
+        return 1
 
-    def get_heat_map():
-        ...
+    def get_heatmap(act_id):
+        return act_id #HeatMapWrapper.generate_map()
