@@ -124,6 +124,8 @@ class ConnectionsLogWrapper:
             # lines = f.readlines()
 
             for i, line in enumerate(f):
+                if i % 100 == 0:
+                    print(i)
                 if i != 0:
                     raw_data = line.split(',')
                     connections_db.append(
