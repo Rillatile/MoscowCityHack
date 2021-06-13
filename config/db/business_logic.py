@@ -384,7 +384,7 @@ class HeatMapWrapper:
 
     def get_from_db(act_id):  # достать карту для выбранной активности
         id = int(act_id)
-        j = next(x for x in table_names if x == (Activity.objects.get(id=id)).table_name)
+        j = next(i for i, x in enumerate(table_names) if x == (Activity.objects.get(id=id)).table_name)
         return list(dts[j].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
 
