@@ -24,7 +24,8 @@ from .models import (
     Layer,
     Metric,
     Scope,
-    Subway, BarLayers, CafeLayers, BakeryLayers, SupermarketLayers, DentistryLayers, BeautySaloonLayers
+    Subway, BarLayers, CafeLayers, BakeryLayers, SupermarketLayers, DentistryLayers, BeautySaloonLayers,
+    BarbershopLayers
 )
 
 
@@ -34,7 +35,7 @@ class CoordinateDataWrapper:
             lat=data['lat'].replace(',', '.'),
             lon=data['lon'].replace(',', '.'),
             processed_value=data['value'],
-            metric = data['metric']
+            metric=data['metric']
         )
 
         cd.save()
@@ -98,7 +99,8 @@ class HousePopulationDataWrapper:
                 'value': house['flats'],
                 'metric': Metric.objects.get(name='население')
             })
-            
+
+
 class OfficesDataWrapper:
     def save(data):
         for office in data['result']:
@@ -135,7 +137,7 @@ class ConnectionsLogWrapper:
                         waps[raw_data[1]] = {}
                         waps[raw_data[1]]['lat'] = raw_data[4].replace('(', '').replace('"', '').strip()
                         waps[raw_data[1]]['lon'] = raw_data[5].replace(')', '').replace('"', '').strip()
-            
+
             devices_db = []
             users_db = []
             waps_db = []
@@ -148,37 +150,39 @@ class ConnectionsLogWrapper:
 
             for key in waps.keys():
                 waps_db.append(WAP(mac=key, lat=waps[key]['lat'], lon=waps[key]['lon']))
-            
+
             Device.objects.bulk_create(devices_db)
             User.objects.bulk_create(users_db)
             WAP.objects.bulk_create(waps_db)
 
-            print(datetime.now() - st)         
-                    # device = Device.objects.get_or_create(
-                    #     device_hash=raw_data[2]
-                    # )[0]
-                    # user = None
-                    # if raw_data[3] != 'null':
-                    #     user = User.objects.get_or_create(
-                    #         user_hash=raw_data[3]
-                    #     )[0]
-                    # wap = WAP.objects.get_or_create(
-                    #     mac=raw_data[1],
-                    #     lat=raw_data[4].replace(
-                    #         '(', '').replace('"', '').strip(),
-                    #     lon=raw_data[5].replace(')', '').replace(
-                    #         '"', '').strip(),
-                    # )[0]
-                    # connection = Connection(
-                    #     datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
-                    #     access_point=wap,
-                    #     device=device,
-                    #     user=user
-                    # )
+            print(datetime.now() - st)
+            # device = Device.objects.get_or_create(
+            #     device_hash=raw_data[2]
+            # )[0]
+            # user = None
+            # if raw_data[3] != 'null':
+            #     user = User.objects.get_or_create(
+            #         user_hash=raw_data[3]
+            #     )[0]
+            # wap = WAP.objects.get_or_create(
+            #     mac=raw_data[1],
+            #     lat=raw_data[4].replace(
+            #         '(', '').replace('"', '').strip(),
+            #     lon=raw_data[5].replace(')', '').replace(
+            #         '"', '').strip(),
+            # )[0]
+            # connection = Connection(
+            #     datetime=datetime.strptime(raw_data[0], '%Y-%m-%d %H:%M:%S%z'),
+            #     access_point=wap,
+            #     device=device,
+            #     user=user
+            # )
 
-                    # connection.save()
+            # connection.save()
 
-dts = [BakeryLayers, SupermarketLayers, DentistryLayers, BeautySaloonLayers, CafeLayers, BarLayers]
+
+dts = [BarLayers, CafeLayers, DentistryLayers, BarbershopLayers, BeautySaloonLayers, SupermarketLayers, BakeryLayers]
+
 
 class LayerBuilder:
     def process_coordinates():
@@ -237,8 +241,8 @@ class LayerBuilder:
             # start + ((point - start)//step)*step for lon coord
             # start - ((start - point)//step)*step for lat coord
             left_up_point = [
-                round(start_point[0] - lat_step*((start_point[0] - float(point.lat))//lat_step), 6),
-                round(start_point[1] + lon_step*((float(point.lon) - start_point[1])//lon_step), 6)
+                round(start_point[0] - lat_step * ((start_point[0] - float(point.lat)) // lat_step), 6),
+                round(start_point[1] + lon_step * ((float(point.lon) - start_point[1]) // lon_step), 6)
             ]
             # Search a layer with such coordinates
             for k, layer in enumerate(layers):
@@ -272,7 +276,7 @@ class LayerBuilder:
             max_value = layers_by_metric.last().value
             for i, layer in enumerate(layers_by_metric):
                 # (value - min) / (max - min)
-                layers_by_metric[i].value = (layers_by_metric[i].value - min_value) / (max_value-min_value)
+                layers_by_metric[i].value = (layers_by_metric[i].value - min_value) / (max_value - min_value)
             # Update scaled values data
             Layer.objects.bulk_update(layers_by_metric, ['value'])
 
@@ -295,7 +299,9 @@ class LayerBuilder:
             zero_act_layer = []
             for i in lats:
                 for j in lons:
-                    zero_act_layer.append(dts[activity.id-1].objects.create(lat=round(i, 6), lon=round(j, 6), metric=metrics[0], value=0))
+                    zero_act_layer.append(
+                        dts[activity.id - 1].objects.create(lat=round(i, 6), lon=round(j, 6), metric=metrics[0],
+                                                            value=0))
 
         for i, activity in enumerate(activities):
             act_layers = zero_act_layer
@@ -305,7 +311,7 @@ class LayerBuilder:
                     layer = layers.filter(metric=metric, lat=act_layer.lat, lon=act_layer.lon).first()
                     # суммируем исходное значение со значением в секторе по метрике с учетом коэффициента конкретного
                     # вида деятельности
-                    act_layers[j].value = act_layers[j].value + activity.config[metric.id-1] * layer.value
+                    act_layers[j].value = act_layers[j].value + activity.config[metric.id - 1] * layer.value
                 # найдем среднее арифметическое для каждого сектора общей карты
                 for j, _ in enumerate(act_layers):
                     act_layers[j].value = act_layers[j].value / metrics.count()
@@ -326,11 +332,11 @@ class HeatMapWrapper:
         layers = LayerBuilder.generate_layers(is_zero=is_zero)
         return layers
 
-    def get_rand_heatmap(act_id):    # генерация случайной карты
+    def get_rand_heatmap(act_id):  # генерация случайной карты
         LayerBuilder.generate_layers(is_zero=False, on_delete=True)
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
-    def get_from_db(act_id):        # достать карту для выбранной активности
+    def get_from_db(act_id):  # достать карту для выбранной активности
         return list(dts[int(act_id)].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
 
