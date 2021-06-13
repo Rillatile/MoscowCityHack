@@ -125,16 +125,35 @@ class ConnectionsLogWrapper:
             for i, line in enumerate(lines):
                 if i != 0:
                     raw_data = line.split(',')
+
                     devices.add(raw_data[2])
+
                     if raw_data[3] != 'null':
                         users.add(raw_data[3])
-                    # if raw_data[1] not in waps.keys:
-                    #     waps[raw_data[1]]['lat'] = raw_data[4].replace('(', '').replace('"', '').strip()
-                    #     waps[raw_data[1]]['lon'] = raw_data[5].replace(')', '').replace('"', '').strip()
-            print(len(devices))
-            print(len(users))
-            # print(len(waps))
-            print(datetime.now() - st)
+
+                    if raw_data[1] not in waps.keys():
+                        waps[raw_data[1]] = {}
+                        waps[raw_data[1]]['lat'] = raw_data[4].replace('(', '').replace('"', '').strip()
+                        waps[raw_data[1]]['lon'] = raw_data[5].replace(')', '').replace('"', '').strip()
+            
+            devices_db = []
+            users_db = []
+            waps_db = []
+
+            for device in list(devices):
+                devices_db.append(Device(device_hash=device))
+
+            for user in list(users):
+                users_db.append(User(user_hash=user))
+
+            for key in waps.keys():
+                waps_db.append(WAP(mac=key, lat=waps[key]['lat'], lon=waps[key]['lon']))
+            
+            Device.objects.bulk_create(devices_db)
+            User.objects.bulk_create(users_db)
+            WAP.objects.bulk_create(waps_db)
+
+            print(datetime.now() - st)         
                     # device = Device.objects.get_or_create(
                     #     device_hash=raw_data[2]
                     # )[0]
