@@ -198,7 +198,7 @@ class ConnectionsLogWrapper:
 
 
 dts = [BarLayers, CafeLayers, DentistryLayers, BarbershopLayers, BeautySaloonLayers, SupermarketLayers, BakeryLayers]
-
+table_names = ['BarLayers', 'CafeLayers', 'DentistryLayers', 'BarbershopLayers', 'BeautySaloonLayers', 'SupermarketLayers', 'BakeryLayers']
 
 class LayerBuilder:
     def process_coordinates():
@@ -355,7 +355,9 @@ class HeatMapWrapper:
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
     def get_from_db(act_id):  # достать карту для выбранной активности
-        return list(dts[int(act_id)].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
+        id = int(act_id)
+        j = next(x for x in table_names if x == (Activity.objects.get(id=id)).table_name)
+        return list(dts[j].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
 
 class SubwayWrapper:
