@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    ParseConnectionsLogFileView,
+    # ParseConnectionsLogFileView,
     SendCoordinateDataView,
     SendHousePopulationDataView,
     SendOfficesDataView,
@@ -25,8 +25,8 @@ urlpatterns = [
          name='send_organization_data'),
     path('send_rental_price_data', SendRentalPriceDataView.as_view(),
          name='send_rental_price_data'),
-    path('parse_connections_log_file', ParseConnectionsLogFileView.as_view(),
-         name='parse_connections_log_file'),
+#     path('parse_connections_log_file', ParseConnectionsLogFileView.as_view(),
+#          name='parse_connections_log_file'),
     path('get_activities', ActivitiesView.as_view(), name='get_activities'),
     path('heatmap', HeatMapView.as_view(), name='heatmap'),
     # get sector data with metric id

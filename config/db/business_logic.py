@@ -1,6 +1,5 @@
 from os import access, name
 import numpy as np
-import redis
 
 from datetime import datetime
 
