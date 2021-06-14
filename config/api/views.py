@@ -62,17 +62,17 @@ class SendHousePopulationDataView(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class ParseConnectionsLogFileView(APIView):
-    parser_classes = [JSONParser]
+# class ParseConnectionsLogFileView(APIView):
+#     parser_classes = [JSONParser]
 
-    def post(self, request, format=None):
-        try:
-            # ConnectionsLogWrapper.parse_connections_log_file(
-            #     request.data['path'])
-            ConnectionsLogWrapper.parse_connections(request.data['path'])
-            return Response(status=status.HTTP_200_OK)
-        except:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#     def post(self, request, format=None):
+#         try:
+#             ConnectionsLogWrapper.parse_connections_log_file(
+#                 request.data['path'])
+#             ConnectionsLogWrapper.parse_connections(request.data['path'])
+#             return Response(status=status.HTTP_200_OK)
+#         except:
+#             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class SendOfficesDataView(APIView):
