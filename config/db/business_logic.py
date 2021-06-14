@@ -405,7 +405,7 @@ class LayerBuilder:
                 for j, _ in enumerate(act_layers):
                     act_layers[j].value = act_layers[j].value / len(metrics)
 
-            dts[i].objects.bulk_update(act_layers, ['value'])
+                dts[i].objects.bulk_update(act_layers, ['value'])
 
 
 class ActivitiesWrapper:
