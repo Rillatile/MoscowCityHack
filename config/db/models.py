@@ -296,7 +296,6 @@ class ClinicLayers(LayerAbstract):
     ...
 
 
-
 class Subway(models.Model):
     lon = models.CharField(
         max_length=20,
