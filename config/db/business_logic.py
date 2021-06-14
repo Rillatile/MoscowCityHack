@@ -435,7 +435,10 @@ class HeatMapWrapper:
     def get_sector_data(sector_id, act_id):
         data1 = {'metrics': [], 'general_value': 0}
         activity = Activity.objects.get(id=act_id)
-        j = next(i for i, x in enumerate(table_names) if x == activity.table_name)
+        for j, name in enumerate(table_names):
+            if activity.table_name == name:
+                break
+        # j = next(i for i, x in enumerate(table_names) if x == activity.table_name)
 
         data = dts[j].objects.get(id=sector_id)
         datas = Layer.objects.all()
