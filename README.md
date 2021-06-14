@@ -3,7 +3,7 @@
 
 
 ## Адрес приложения 
-http://45.9.24.21:3000
+http://45.9.24.21
 
 ## Front-end repos
 https://github.com/nikitaGetman/hackaton-msh
