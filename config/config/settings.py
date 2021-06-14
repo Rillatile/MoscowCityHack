@@ -27,7 +27,9 @@ SECRET_KEY = os.environ['MCH_SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    os.environ['VM_IP']
+]
 
 
 # Application definition
@@ -81,7 +83,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mch_db',
+        'NAME': os.environ['MCH_DB'],
         'USER': os.environ['MCH_DB_USER'],
         'PASSWORD': os.environ['MCH_DB_PASSWORD'],
         'HOST': os.environ['MCH_DB_HOST'],
@@ -132,3 +134,11 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Map Settings
+# Scale of the grid on the map
+LAT_DISTANCE = 0.0035
+LON_DISTANCE = 0.007
+# Map edges
+EDGE_LEFT_UP = [55.751644, 37.541711]
+EDGE_RIGHT_DOWN = [55.713706, 37.697722]
