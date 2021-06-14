@@ -97,13 +97,6 @@ class ActivitiesView(APIView):
 
 
 class HeatMapView(APIView):
-    def dispatch(self, *args, **kwargs):
-        try:
-            return super(HeatMapView, self).dispatch(*args, **kwargs)
-        except ParseError:
-            pass
-            # Show an error page
-
     def get(self, request, *args, **kwargs):
         act_id = int(request.GET['act_id'])
         data = HeatMapWrapper.get_from_db(act_id)

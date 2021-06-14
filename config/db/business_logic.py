@@ -307,7 +307,7 @@ class LayerBuilder:
                     else:
                         value = 0
                     layers.append(Layer.objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=value))
-        print(len(layers))
+        # print(len(layers))
 
     def group_coord_by_sectors(coordinate_data=None, layers=None):
         start_point = settings.EDGE_LEFT_UP
@@ -427,10 +427,12 @@ class HeatMapWrapper:
 
     def get_from_db(act_id):  # достать карту для выбранной активности
         activity = Activity.objects.get(id=act_id)
+        # print(activity.table_name)
         for j, name in enumerate(table_names):
             if activity.table_name == name:
-                break
-        return list(dts[j].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
+                # print(j)
+                return list(dts[j].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
+        return []
 
     def get_sector_data(sector_id, act_id):
         data1 = {'metrics': [], 'general_value': 0}
