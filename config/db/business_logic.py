@@ -401,11 +401,11 @@ class LayerBuilder:
                     # суммируем исходное значение со значением в секторе по метрике с учетом коэффициента конкретного
                     # вида деятельности
                     act_layers[j].value = act_layers[j].value + activity['config'][metric.id - 1] * layer.value
-            # найдем среднее арифметическое для каждого сектора общей карты
-            for j, _ in enumerate(act_layers):
-                act_layers[j].value = act_layers[j].value / metrics.count()
+                # найдем среднее арифметическое для каждого сектора общей карты
+                for j, _ in enumerate(act_layers):
+                    act_layers[j].value = act_layers[j].value / len(metrics)
 
-            dts[i].objects.bulk_update(act_layers, ['value'])
+                dts[i].objects.bulk_update(act_layers, ['value'])
 
 
 class ActivitiesWrapper:
