@@ -17,6 +17,8 @@ from db.business_logic import (
     SubwayWrapper
 )
 
+from db.models import Layer
+
 
 class SendCoordinateDataView(APIView):
     parser_classes = [JSONParser]
@@ -113,8 +115,11 @@ def generate_zero_layers(request, on_delete):
 #  - построение общих слоев для каждого вида деятельности
 def process_data(request):
     data = LayerBuilder.process_coordinates()       # out - сгруппированные точки CoordinateData по секциям и метрикам
+    # print(len(Layer.objects.all()))
     data = LayerBuilder.scale_values(data)          # out - слои с приведенными значениями
+    # print(len(Layer.objects.all()))
     LayerBuilder.get_general_layers(data)           # построить слой с обощенными метриками
+    # print(len(Layer.objects.all()))
     return HttpResponse('done')
 
 

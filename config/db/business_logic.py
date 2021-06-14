@@ -24,7 +24,8 @@ from .models import (
     Layer,
     Metric,
     Scope,
-    Subway, BarLayers, CafeLayers, BakeryLayers, SupermarketLayers, DentistryLayers, BeautySaloonLayers,
+    Subway,
+    BarLayers, CafeLayers, BakeryLayers, SupermarketLayers, DentistryLayers, BeautySaloonLayers,
     BarbershopLayers
 )
 
@@ -261,7 +262,7 @@ class ConnectionsLogWrapper:
             # connection.save()
     
     
-
+# dts = []
 dts = [BarLayers, CafeLayers, DentistryLayers, BarbershopLayers, BeautySaloonLayers, SupermarketLayers, BakeryLayers]
 table_names = ['BarLayers', 'CafeLayers', 'DentistryLayers', 'BarbershopLayers', 'BeautySaloonLayers', 'SupermarketLayers', 'BakeryLayers']
 
@@ -307,6 +308,7 @@ class LayerBuilder:
                     else:
                         value = 0
                     layers.append(Layer.objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=value))
+        print(len(layers))
 
     def group_coord_by_sectors(coordinate_data=None, layers=None):
         start_point = settings.EDGE_LEFT_UP
@@ -377,6 +379,7 @@ class LayerBuilder:
 
         if not layers:
             layers = Layer.objects.select_related('metric').all()
+        # print('init',len(layers))
         metrics = Metric.objects.all()
         activities = list(Activity.objects.all().values('id', 'config', 'name'))
         lats = np.arange(start_point[0], end_point[0], -lat_step)
@@ -385,11 +388,13 @@ class LayerBuilder:
         for i, activity in enumerate(activities):
             act_layers = []
 
+            # print('before', i, len(Layer.objects.all()))
             for k in lats:
                 for j in lons:
                     act_layers.append(
                         dts[i].objects.create(lat=round(k, 6), lon=round(j, 6), metric=metrics[0], value=0)
                     )
+            # print('after', i, len(Layer.objects.all()))
             for metric in metrics:
                 for j, act_layer in enumerate(act_layers):
                     # находим слой с такой же метрикой и такой же стартовой точкой в общей таблице по слоям
@@ -397,9 +402,10 @@ class LayerBuilder:
                     # суммируем исходное значение со значением в секторе по метрике с учетом коэффициента конкретного
                     # вида деятельности
                     act_layers[j].value = act_layers[j].value + activity['config'][metric.id - 1] * layer.value
-                # найдем среднее арифметическое для каждого сектора общей карты
-                for j, _ in enumerate(act_layers):
-                    act_layers[j].value = act_layers[j].value / metrics.count()
+            # найдем среднее арифметическое для каждого сектора общей карты
+            for j, _ in enumerate(act_layers):
+                act_layers[j].value = act_layers[j].value / metrics.count()
+
             dts[i].objects.bulk_update(act_layers, ['value'])
 
 

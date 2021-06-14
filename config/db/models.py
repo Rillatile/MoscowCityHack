@@ -232,7 +232,7 @@ class Metric(models.Model):
 
 
 # *** Models of concrete activities that uses a service ***
-class Layer(models.Model):
+class LayerAbstract(models.Model):
     metric = models.ForeignKey(
         to='Metric',
         on_delete=models.CASCADE,
@@ -244,50 +244,57 @@ class Layer(models.Model):
     lat_distance = models.FloatField(default=settings.LAT_DISTANCE)
     value = models.FloatField()
 
+    class Meta:
+        abstract = True
+
+
+class Layer(LayerAbstract):
+    ...
+
 
 # Food retail Scope
-class SupermarketLayers(Layer):
-    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
+class SupermarketLayers(LayerAbstract):
+    ...
 
 
-class BakeryLayers(Layer):
-    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
-
+class BakeryLayers(LayerAbstract):
+    ...
 
 # Beauty Scope
-class BarbershopLayers(Layer):
-    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
+class BarbershopLayers(LayerAbstract):
+    ...
 
 
-class BeautySaloonLayers(Layer):
-    activity = models.OneToOneField(to='Activity', null=True, on_delete=models.CASCADE)
+class BeautySaloonLayers(LayerAbstract):
+    ...
 
 
 # Public catering Scope
-class CafeLayers(Layer):
-    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
+class CafeLayers(LayerAbstract):
+    ...
 
 
-class BarLayers(Layer):
-    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
+class BarLayers(LayerAbstract):
+    ...
 
 
 # Household chemicals Scope
-class СosmeticsStoreLayers(Layer):
-    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
+class СosmeticsStoreLayers(LayerAbstract):
+    ...
 
 
-class HouseChemicLayers(Layer):
-    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
+class HouseChemicLayers(LayerAbstract):
+    ...
 
 
 # Health Scope
-class DentistryLayers(Layer):
-    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
+class DentistryLayers(LayerAbstract):
+    ...
 
 
-class ClinicLayers(Layer):
-    activity = models.ForeignKey(to='Activity', null=True, on_delete=models.CASCADE)
+class ClinicLayers(LayerAbstract):
+    ...
+
 
 
 class Subway(models.Model):
