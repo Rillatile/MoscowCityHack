@@ -1,5 +1,6 @@
 from django.http import JsonResponse, HttpResponse
 from rest_framework import status
+from rest_framework.exceptions import ParseError
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,6 +17,8 @@ from db.business_logic import (
     LayerBuilder,
     SubwayWrapper
 )
+
+from db.models import Layer
 
 
 class SendCoordinateDataView(APIView):
@@ -94,6 +97,12 @@ class ActivitiesView(APIView):
 
 
 class HeatMapView(APIView):
+    def dispatch(self, *args, **kwargs):
+        try:
+            return super(HeatMapView, self).dispatch(*args, **kwargs)
+        except ParseError:
+            pass
+            # Show an error page
 
     def get(self, request, *args, **kwargs):
         act_id = int(request.GET['act_id'])
@@ -113,8 +122,11 @@ def generate_zero_layers(request, on_delete):
 #  - построение общих слоев для каждого вида деятельности
 def process_data(request):
     data = LayerBuilder.process_coordinates()       # out - сгруппированные точки CoordinateData по секциям и метрикам
+    # print(len(Layer.objects.all()))
     data = LayerBuilder.scale_values(data)          # out - слои с приведенными значениями
+    # print(len(Layer.objects.all()))
     LayerBuilder.get_general_layers(data)           # построить слой с обощенными метриками
+    # print(len(Layer.objects.all()))
     return HttpResponse('done')
 
 
