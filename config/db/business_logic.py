@@ -35,7 +35,8 @@ class CoordinateDataWrapper:
             lat=data['lat'].replace(',', '.'),
             lon=data['lon'].replace(',', '.'),
             processed_value=data['value'],
-            metric=data['metric']
+            metric=data['metric'],
+            activity=data['activity']
         )
 
         cd.save()
@@ -59,6 +60,14 @@ class OrganizationDataWrapper:
             )
 
             od.save()
+
+            CoordinateDataWrapper.save({
+                'lat': str(organization['point']['lat']).replace(',', '.'),
+                'lon': str(organization['point']['lon']).replace(',', '.'),
+                'value': 1,
+                'metric': Metric.objects.get(name='конкуренты'),
+                'activity': Activity.objects.get(name=organization['type'].lower())
+            })
 
 
 class RentalPriceDataWrapper:
@@ -469,3 +478,10 @@ class SubwayWrapper:
             )
 
             s.save()
+        
+        CoordinateDataWrapper.save({
+                'lat': str(subway['point']['lat']).replace(',', '.'),
+                'lon': str(subway['point']['lon']).replace(',', '.'),
+                'value': 1,
+                'metric': Metric.objects.get(name='метро')
+        })  
