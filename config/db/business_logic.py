@@ -372,7 +372,6 @@ class LayerBuilder:
     def scale_layers(layers_by_metric):
         min_value = layers_by_metric.first().value
         max_value = layers_by_metric.last().value
-        print('metric', '; min =', min_value, '; max =', max_value)
         for i, layer in enumerate(layers_by_metric):
             # (value - min) / (max - min)
             try:
@@ -402,131 +401,48 @@ class LayerBuilder:
 
     @staticmethod
     def get_general_layers(layers=None):
-        # for dt in dts:
-        #     dt.objects.all().delete()
-        #
-        # start_point = settings.EDGE_LEFT_UP
-        # end_point = settings.EDGE_RIGHT_DOWN
-        # lat_step = settings.LAT_DISTANCE
-        # lon_step = settings.LON_DISTANCE
-        #
-        # lats = np.arange(start_point[0], end_point[0], -lat_step)
-        # lons = np.arange(start_point[1], end_point[1], lon_step)
-        #
-        # layers = Layer.objects.select_related('metric').all()
-        # activities = Activity.objects.all()
-        # metrics = Metric.objects.all()
-        #
-        # # Create zero layer for each activity
-        # concrete_layers_datas = []
-        # for dt in table_names:
-        #     zero_datas = []
-        #     for lat in lats:
-        #         for lon in lons:
-        #             zero_datas.append(dt.objects.create(lat=round(lat, 6), lon=round(lon, 6), metric=metrics[0], value=0))
-        #     concrete_layers_datas.append(zero_datas)
-        #
-        # for a_i, activity in activities:
-        #     config = activity.config
-        #     # Find activity table
-        #     for j, tname in enumerate(table_names):
-        #         if activity.table_name == tname:
-        #             break
-        #     counter = [0 for i in range(concrete_layers_datas[a_i])]
-        #     for m_i, m in enumerate(metrics):
-        #         for t_i, table_data in enumerate(concrete_layers_datas[a_i]):
-        #             for l_i, layer in enumerate(table_data):
-        #                 found_layer = layers.filter(metric=m, lat=layer.lat, lon=layer.lon)
-        #                 concrete_layers_datas[a_i][t_i][l_i].value = concrete_layers_datas[a_i][t_i][l_i].value + config(m_i) * found_layer.value
-        #
-                    # dts[j].objects.filter()
-        # j = next(i for i, x in enumerate(table_names) if x == activity.table_name)
-        #
-            # data = dts[j].objects.get(id=sector_id)
-        # out_data['general_value'] = data.value
-        # layers = Layer.objects.all().filter(lat=data.lat, lon=data.lon)
-        #
-        # config = activity.config
-        # metrics = Metric.objects.all()
-        # # layers = Layer.objects.all()
-        # for k, _ in enumerate(metrics):
-        #     layer = layers.filter(metric_id=_.id).first()
-        #     # value_from_layers_table = layers[i].value
-        #     value_from_layers_table = layer.value
-        #     value = value_from_layers_table * config[k]
-        #     out_data['metrics'].append({'metric_id': _.id, 'value': value})
         for dt in dts:
             dt.objects.all().delete()
-
-        if not layers:
-            layers = Layer.objects.select_related('activity', 'metric').all()
-        metrics = Metric.objects.all()
-        activities = Activity.objects.all()
-
         is_correct, start_point, end_point, steps = LayerBuilder.generate_borders()
         if not is_correct:
             return -1
         lats = np.arange(start_point[0], end_point[0], -steps[0])
         lons = np.arange(start_point[1], end_point[1], steps[1])
-
-        for a_i, activity in enumerate(activities):
-            activity_layers = []
-            # Заполняем таблицу по каждой активности нулевыми значениями value
-            # (так как метрика неважнa, то просто выберем первую)
+        if not layers:
+            layers = Layer.objects.select_related('metric', 'activity').all()
+        metrics = Metric.objects.all()
+        activities = list(Activity.objects.all().values())
+        for i, activity in enumerate(activities):
+            act_layers = []
             for t_i, table_name in enumerate(table_names):
-                if activity.table_name == table_name:
+                if activity['table_name'] == table_name:
                     break
             for lat in lats:
                 for lon in lons:
-                    activity_layers.append(
-                        dts[t_i].objects.create(lat=round(lat, 6), lon=round(lon, 6), metric=metrics[0], value=0)
-                    )
+                    act_layers.append(dts[t_i].objects.create(lat=round(lat, 6), lon=round(lon, 6), metric=metrics[0], value=0))
+            counter = [0 for _ in range(len(act_layers))]
+
             # Теперь расчитываем значения value ля каждого вида деятельности
-            counter = [0 for _ in range(len(activity_layers))]
             for m_i, metric in enumerate(metrics):
-                for al_i, activity_layer in enumerate(activity_layers):
-                # for j in range(10):
+                for al_i, activity_layer in enumerate(act_layers):
                     # находим слой с такой же метрикой и такой же стартовой точкой в общей таблице по слоям
                     points = CoordinateData.objects.select_related('activity').filter(metric=metric).first()
                     if points.activity is not None:
-                        layer = layers.filter(metric=metric, lat=activity_layers[al_i].lat, lon=activity_layers[al_i].lon, activity=activity).first()
+                        layer = layers.filter(metric=metric, lat=act_layers[al_i].lat, lon=act_layers[al_i].lon, activity__id=activity['id']).first()
                     else:
-                        layer = layers.filter(metric=metric, lat=activity_layers[al_i].lat, lon=activity_layers[al_i].lon).first()
+                        layer = layers.filter(metric=metric, lat=act_layers[al_i].lat, lon=act_layers[al_i].lon).first()
                     # суммируем исходное значение со значением в секторе по метрике с учетом коэффициента конкретного
                     # вида деятельности
-                    # temp = (activity['config'][m_i] - 1) / 4
-                    # print('act_layers[',j,'].value = ', act_layers[j].value, '+', temp, '*', layer.value, '=', act_layers[j].value + temp * layer.value)
-                    activity_layers[al_i].value = activity_layers[al_i].value + activity.config[m_i]*layer.value
-                    if layer.value * activity.config[m_i] != 0:
+                    if activity['config'][m_i] * layer.value > 0:
+                        act_layers[al_i].value = act_layers[al_i].value + (activity['config'][m_i]/4.0) * layer.value
                         counter[al_i] = counter[al_i] + 1
-
-            for al_i, activity_layer in enumerate(activity_layers):
-                try:
-                    activity_layers[al_i].value = activity_layers[al_i].value / (5*counter[al_i])
-                    if activity_layers[al_i].value < 0.03:
-                        activity_layers[al_i].value = 0
-                except ZeroDivisionError:
-                    activity_layers[al_i].value = 0
-
-            dts[t_i].objects.bulk_update(activity_layers, ['value'])
             # найдем среднее арифметическое для каждого сектора общей карты
-            # # print('***********************************************')
-            # max = 0
-            # i_max = -1
-            # for j, _ in enumerate(act_layers):
-            #     try:
-            #         # print('act_layers[', j, '].value = ', act_layers[j].value, '/', counter[j], ' = ', act_layers[j].value / counter[j])
-            #         act_layers[j].value = act_layers[j].value / counter[j]
-            #     except ZeroDivisionError:
-            #         act_layers[j].value = 0
-            #     if max < act_layers[j].value:
-            #         max = act_layers[j].value
-            #         i_max = j
-            #     # Привести к единому формату [0, 1]
-            #     # print('act_layers[j].value = (', act_layers[j].value, '-1)/4 = ', (act_layers[j].value - 1) / 4)
-            #     # act_layers[j].value = (act_layers[j].value - 1) / 4
-            # print(max, i_max)
-            # dts[i].objects.bulk_update(act_layers, ['value'])
+            for j, _ in enumerate(act_layers):
+                try:
+                    act_layers[j].value = act_layers[j].value / (counter[j])
+                except ZeroDivisionError:
+                    act_layers[j].value = 0
+            dts[t_i].objects.bulk_update(act_layers, ['value'])
 
 
 class ActivitiesWrapper:
@@ -563,22 +479,56 @@ class HeatMapWrapper:
         for j, name in enumerate(table_names):
             if activity.table_name == name:
                 break
-        # j = next(i for i, x in enumerate(table_names) if x == activity.table_name)
 
         data = dts[j].objects.get(id=sector_id)
-        out_data['general_value'] = data.value
         layers = Layer.objects.all().filter(lat=data.lat, lon=data.lon)
 
         config = activity.config
+        layers_without_metric = []
         metrics = Metric.objects.all()
-        # layers = Layer.objects.all()
         for k, _ in enumerate(metrics):
-            layer = layers.filter(metric_id=_.id).first()
-            # value_from_layers_table = layers[i].value
-            value_from_layers_table = layer.value
-            value = value_from_layers_table*config[k]
-            out_data['metrics'].append({'metric_id': _.id, 'value': value/5})
+            point = CoordinateData.objects.select_related('activity', 'metric').filter(metric=_).first()
+            if point.activity is not None:
+                layer = layers.filter(metric=_, activity=point.activity).first()
+            else:
+                layer = layers.filter(metric=_).first()
+            layers_without_metric.append(layer.value)
+        counter = 0
+        for l in layers_without_metric:
+            if l>0:
+                counter = counter + 1
+        general = 0
+        for k, _ in enumerate(metrics):
+            counted_layer = layers_without_metric[k]*config[k] / 4.0
+            out_data['metrics'].append({'metric': _.id, 'value': counted_layer})
+            general = general + counted_layer
+        out_data['general_value'] = general / counter
         return out_data
+
+
+    # @staticmethod
+    # def get_sector_data(sector_id, act_id):
+    #     out_data = {'metrics': [], 'general_value': 0}
+    #     activity = Activity.objects.get(id=act_id)
+    #     for j, name in enumerate(table_names):
+    #         if activity.table_name == name:
+    #             break
+    #     # j = next(i for i, x in enumerate(table_names) if x == activity.table_name)
+    #
+    #     data = dts[j].objects.get(id=sector_id)
+    #     out_data['general_value'] = data.value
+    #     layers = Layer.objects.all().filter(lat=data.lat, lon=data.lon)
+    #
+    #     config = activity.config
+    #     metrics = Metric.objects.all()
+    #     # layers = Layer.objects.all()
+    #     for k, _ in enumerate(metrics):
+    #         layer = layers.filter(metric_id=_.id).first()
+    #         # value_from_layers_table = layers[i].value
+    #         value_from_layers_table = layer.value
+    #         value = value_from_layers_table*config[k]
+    #         out_data['metrics'].append({'metric_id': _.id, 'value': value/5})
+    #     return out_data
 
 
 class SubwayWrapper:
