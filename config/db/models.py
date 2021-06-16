@@ -1,9 +1,7 @@
-from os import access
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
 
 from django.db import models
-from django.db.models.expressions import F
 
 
 class CoordinateData(models.Model):
@@ -22,6 +20,7 @@ class CoordinateData(models.Model):
     metric = models.ForeignKey(
         to='Metric', on_delete=models.CASCADE, null=True)
     processed_value = models.FloatField()
+    activity = models.ForeignKey(to='Activity', null=True, default=None, on_delete=models.CASCADE)
 
 
 class WAP(models.Model):
@@ -243,6 +242,7 @@ class LayerAbstract(models.Model):
     lon_distance = models.FloatField(default=settings.LON_DISTANCE)
     lat_distance = models.FloatField(default=settings.LAT_DISTANCE)
     value = models.FloatField()
+    activity = models.ForeignKey(to='Activity', on_delete=models.CASCADE, null=True, default=None)
 
     class Meta:
         abstract = True
@@ -259,6 +259,7 @@ class SupermarketLayers(LayerAbstract):
 
 class BakeryLayers(LayerAbstract):
     ...
+
 
 # Beauty Scope
 class BarbershopLayers(LayerAbstract):
@@ -309,13 +310,3 @@ class Subway(models.Model):
         blank=False,
         verbose_name='Широта'
     )
-
-
-# Services Scope
-# todo: come up with at least two types of activities for this Scope
-# e.g.:
-# class SomeServiceLayers(Layer):
-#     ...
-#
-# class AnotherServiceLayers(Layer):
-#     ...

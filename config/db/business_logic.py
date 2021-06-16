@@ -1,11 +1,9 @@
-from os import access, name
 import numpy as np
 
 from datetime import datetime
 
 from django.conf import settings
 
-from django.db import connection
 from django.db.models import F
 
 from .models import (
@@ -16,13 +14,11 @@ from .models import (
     FlatsData,
     OfficesData,
     OrganizationData,
-    Subway,
     User,
     RentalData,
     WAP,
     Layer,
     Metric,
-    Scope,
     Subway,
     BarLayers, CafeLayers, BakeryLayers, SupermarketLayers, DentistryLayers, BeautySaloonLayers,
     BarbershopLayers
@@ -122,7 +118,7 @@ class OfficesDataWrapper:
         lon_step = settings.LON_DISTANCE
 
         all_offices = list(OfficesData.objects.filter(lat__lte=start_point[0], lat__gte=end_point[0]+lat_step,
-                                                      lon__gte=start_point[1], lon__lte=end_point[1]-lon_step).values())
+                                                      lon__gte=start_point[1], lon__lte=end_point[1]-lon_step).order_by('?').values())
         return all_offices[:number]
 
 
@@ -260,13 +256,38 @@ class ConnectionsLogWrapper:
 
             # connection.save()
     
-    
-# dts = []
+
 dts = [BarLayers, CafeLayers, DentistryLayers, BarbershopLayers, BeautySaloonLayers, SupermarketLayers, BakeryLayers]
 table_names = ['BarLayers', 'CafeLayers', 'DentistryLayers', 'BarbershopLayers', 'BeautySaloonLayers', 'SupermarketLayers', 'BakeryLayers']
 
 
 class LayerBuilder:
+    @staticmethod
+    def generate_borders():
+        start = settings.EDGE_LEFT_UP
+        end = settings.EDGE_RIGHT_DOWN
+        lat_step = settings.LAT_DISTANCE
+        lon_step = settings.LON_DISTANCE
+
+        is_correct = True
+        start_point = start
+        end_point = end
+        steps = [lat_step, lon_step]
+
+        # Check if the step more than area width or height
+        if lat_step > start_point[0] - end_point[0]:
+            return (not is_correct), start_point, end_point, steps
+        if lon_step > end_point[1] - start_point[1]:
+            return (not is_correct), start_point, end_point, steps
+
+        # Check if an area cannot be separated into whole number of sectors - then expand the area
+        if lat_step * ((start_point[0] - end_point[0]) // lat_step) != start_point[0] - end_point[0]:
+            end_point[0] = start_point[0] - lat_step * ((start_point[0] - end_point[0]) // lat_step + 1)
+        if lon_step * ((end_point[1] - start_point[1]) // lon_step) != end_point[1] - start_point[1]:
+            end_point[1] = start_point[1] + lon_step * ((end_point[1] - start_point[1]) // lon_step + 1)
+        return is_correct, start_point, end_point, steps
+
+    @staticmethod
     def process_coordinates():
         # Generate empty layers with deleting old layers in db
         LayerBuilder.generate_layers(on_delete=True, is_zero=True)
@@ -274,50 +295,49 @@ class LayerBuilder:
         LayerBuilder.group_coord_by_sectors()
         return Layer.objects.select_related('metric').all()
 
+    @staticmethod
     def generate_layers(metrics=None, on_delete=False, is_zero=False):
         if on_delete:
             Layer.objects.all().delete()
-        start_point = settings.EDGE_LEFT_UP
-        end_point = settings.EDGE_RIGHT_DOWN
-        lat_step = settings.LAT_DISTANCE
-        lon_step = settings.LON_DISTANCE
 
         if not metrics:
             metrics = Metric.objects.all()
+        activities = Activity.objects.all()
 
-        # Check if the step more than area width or height
-        if lat_step > start_point[0] - end_point[0]:
+        is_correct, start_point, end_point, steps = LayerBuilder.generate_borders()
+        if not is_correct:
             return -1
-        if lon_step > end_point[1] - start_point[1]:
-            return -1
-        # Check if an area cannot be separated into whole number of sectors - then expand the area
-        if lat_step * ((start_point[0] - end_point[0]) // lat_step) != start_point[0] - end_point[0]:
-            end_point[0] = start_point[0] - lat_step * ((start_point[0] - end_point[0]) // lat_step + 1)
-        if lon_step * ((end_point[1] - start_point[1]) // lon_step) != end_point[1] - start_point[1]:
-            end_point[1] = start_point[1] + lon_step * ((end_point[1] - start_point[1]) // lon_step + 1)
-
-        lats = np.arange(start_point[0], end_point[0], -lat_step)
-        lons = np.arange(start_point[1], end_point[1], lon_step)
+        lats = np.arange(start_point[0], end_point[0], -steps[0])
+        lons = np.arange(start_point[1], end_point[1], steps[1])
+        # Create layers ith all metrics
         layers = []
         for i in lats:
             for j in lons:
                 for m in metrics:
+                    points = CoordinateData.objects.select_related('activity').filter(metric=m).first()
                     if not is_zero:
                         value = np.random.random()
                     else:
                         value = 0
-                    layers.append(Layer.objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=value))
-        # print(len(layers))
+                    if points.activity is not None:
+                        for a in activities:
+                            layers.append(Layer.objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=value, activity=a))
+                    else:
+                        layers.append(Layer.objects.create(lat=round(i, 6), lon=round(j, 6), metric=m, value=value))
+        return layers
 
+    @staticmethod
     def group_coord_by_sectors(coordinate_data=None, layers=None):
         start_point = settings.EDGE_LEFT_UP
         lat_step = settings.LAT_DISTANCE
         lon_step = settings.LON_DISTANCE
+
         if not layers:
-            layers = Layer.objects.all()
-        layer_counter = [0 for _ in range(len(layers))]
+            layers = list(Layer.objects.select_related('activity', 'metric').all())
         if not coordinate_data:
-            coordinate_data = CoordinateData.objects.all()
+            coordinate_data = CoordinateData.objects.select_related('activity', 'metric').all()
+
+        layer_counter = [0 for _ in range(len(layers))]
         # Count layers[i].value
         for point in coordinate_data:
             # Count where the point is placed (section start coordinates)
@@ -328,18 +348,20 @@ class LayerBuilder:
                 round(start_point[1] + lon_step * ((float(point.lon) - start_point[1]) // lon_step), 6)
             ]
             # Search a layer with such coordinates
-            for k, layer in enumerate(layers):
-                if (round(layer.lat, 6) == left_up_point[0]) and (round(layer.lon, 6) == left_up_point[1]) and \
-                        (layer.metric == point.metric):
-                    break
+            for l_i, layer in enumerate(layers):
+                if (layer.lat == left_up_point[0]) and (layer.lon == left_up_point[1]) and (layer.metric == point.metric):
+                    if (point.activity is not None) and (layer.activity is not None):
+                        if point.activity.id == layer.activity.id:
+                            break
+                    else:
+                        break
             # Increment layers[i].value and layer_counter value
-            layers[k].value = layers[k].value + point.processed_value
-            layer_counter[k] = layer_counter[k] + 1
+            layers[l_i].value = layers[l_i].value + point.processed_value
+            layer_counter[l_i] = layer_counter[l_i] + 1
         # Count average Layer value
         # There is chance to "play" with data - you can use median, min, max etc values instead of average
         for i, layer in enumerate(layers):
-            if point.metric.generalizing_oper == 'ave':
-                old_value = layer.value
+            if layer.metric.generalizing_oper == 'ave':
                 try:
                     layers[i].value = layers[i].value / layer_counter[i]
                 except ZeroDivisionError:
@@ -347,69 +369,168 @@ class LayerBuilder:
         Layer.objects.bulk_update(layers, ['value'])
 
     @staticmethod
-    def scale_values(layers=None):
+    def scale_layers(layers_by_metric):
+        min_value = layers_by_metric.first().value
+        max_value = layers_by_metric.last().value
+        print('metric', '; min =', min_value, '; max =', max_value)
+        for i, layer in enumerate(layers_by_metric):
+            # (value - min) / (max - min)
+            try:
+                layers_by_metric[i].value = (layers_by_metric[i].value - min_value) / (
+                        max_value - min_value)
+            except ZeroDivisionError:
+                layers_by_metric[i].value = 0
+        # Update scaled values data
+        Layer.objects.bulk_update(layers_by_metric, ['value'])
+
+    @staticmethod
+    def scale_values():
         """Scale data with value [0, 1]"""
-        if not layers:
-            layers = Layer.objects.select_related('metric').all()
+        layers = Layer.objects.select_related('metric').all()
         metrics = Metric.objects.all()
+        activities = Activity.objects.all()
         # For each metric find min and max values
         for metric in metrics:
-            layers_by_metric = layers.filter(metric=metric).order_by('value')
-            min_value = layers_by_metric.first().value
-            max_value = layers_by_metric.last().value
-            for i, layer in enumerate(layers_by_metric):
-                # (value - min) / (max - min)
-                try:
-                    layers_by_metric[i].value = (layers_by_metric[i].value - min_value) / (max_value - min_value)
-                except ZeroDivisionError:
-                    layers_by_metric[i].value = 0
-            # Update scaled values data
-            Layer.objects.bulk_update(layers_by_metric, ['value'])
+            points = CoordinateData.objects.select_related('activity').filter(metric=metric).first()
+            if points.activity is not None:
+                for a in activities:
+                    layers_by_metric = layers.filter(metric=metric, activity=a).exclude(value=0).order_by('value')
+                    LayerBuilder.scale_layers(layers_by_metric)
+            else:
+                layers_by_metric = layers.filter(metric=metric).exclude(value=0).order_by('value')
+                LayerBuilder.scale_layers(layers_by_metric)
 
     @staticmethod
     def get_general_layers(layers=None):
+        # for dt in dts:
+        #     dt.objects.all().delete()
+        #
+        # start_point = settings.EDGE_LEFT_UP
+        # end_point = settings.EDGE_RIGHT_DOWN
+        # lat_step = settings.LAT_DISTANCE
+        # lon_step = settings.LON_DISTANCE
+        #
+        # lats = np.arange(start_point[0], end_point[0], -lat_step)
+        # lons = np.arange(start_point[1], end_point[1], lon_step)
+        #
+        # layers = Layer.objects.select_related('metric').all()
+        # activities = Activity.objects.all()
+        # metrics = Metric.objects.all()
+        #
+        # # Create zero layer for each activity
+        # concrete_layers_datas = []
+        # for dt in table_names:
+        #     zero_datas = []
+        #     for lat in lats:
+        #         for lon in lons:
+        #             zero_datas.append(dt.objects.create(lat=round(lat, 6), lon=round(lon, 6), metric=metrics[0], value=0))
+        #     concrete_layers_datas.append(zero_datas)
+        #
+        # for a_i, activity in activities:
+        #     config = activity.config
+        #     # Find activity table
+        #     for j, tname in enumerate(table_names):
+        #         if activity.table_name == tname:
+        #             break
+        #     counter = [0 for i in range(concrete_layers_datas[a_i])]
+        #     for m_i, m in enumerate(metrics):
+        #         for t_i, table_data in enumerate(concrete_layers_datas[a_i]):
+        #             for l_i, layer in enumerate(table_data):
+        #                 found_layer = layers.filter(metric=m, lat=layer.lat, lon=layer.lon)
+        #                 concrete_layers_datas[a_i][t_i][l_i].value = concrete_layers_datas[a_i][t_i][l_i].value + config(m_i) * found_layer.value
+        #
+                    # dts[j].objects.filter()
+        # j = next(i for i, x in enumerate(table_names) if x == activity.table_name)
+        #
+            # data = dts[j].objects.get(id=sector_id)
+        # out_data['general_value'] = data.value
+        # layers = Layer.objects.all().filter(lat=data.lat, lon=data.lon)
+        #
+        # config = activity.config
+        # metrics = Metric.objects.all()
+        # # layers = Layer.objects.all()
+        # for k, _ in enumerate(metrics):
+        #     layer = layers.filter(metric_id=_.id).first()
+        #     # value_from_layers_table = layers[i].value
+        #     value_from_layers_table = layer.value
+        #     value = value_from_layers_table * config[k]
+        #     out_data['metrics'].append({'metric_id': _.id, 'value': value})
         for dt in dts:
             dt.objects.all().delete()
 
-        start_point = settings.EDGE_LEFT_UP
-        end_point = settings.EDGE_RIGHT_DOWN
-        lat_step = settings.LAT_DISTANCE
-        lon_step = settings.LON_DISTANCE
-
         if not layers:
-            layers = Layer.objects.select_related('metric').all()
-        # print('init',len(layers))
+            layers = Layer.objects.select_related('activity', 'metric').all()
         metrics = Metric.objects.all()
-        activities = list(Activity.objects.all().values('id', 'config', 'name'))
-        lats = np.arange(start_point[0], end_point[0], -lat_step)
-        lons = np.arange(start_point[1], end_point[1], lon_step)
+        activities = Activity.objects.all()
 
-        for i, activity in enumerate(activities):
-            act_layers = []
+        is_correct, start_point, end_point, steps = LayerBuilder.generate_borders()
+        if not is_correct:
+            return -1
+        lats = np.arange(start_point[0], end_point[0], -steps[0])
+        lons = np.arange(start_point[1], end_point[1], steps[1])
 
-            # print('before', i, len(Layer.objects.all()))
-            for k in lats:
-                for j in lons:
-                    act_layers.append(
-                        dts[i].objects.create(lat=round(k, 6), lon=round(j, 6), metric=metrics[0], value=0)
+        for a_i, activity in enumerate(activities):
+            activity_layers = []
+            # Заполняем таблицу по каждой активности нулевыми значениями value
+            # (так как метрика неважнa, то просто выберем первую)
+            for t_i, table_name in enumerate(table_names):
+                if activity.table_name == table_name:
+                    break
+            for lat in lats:
+                for lon in lons:
+                    activity_layers.append(
+                        dts[t_i].objects.create(lat=round(lat, 6), lon=round(lon, 6), metric=metrics[0], value=0)
                     )
-            # print('after', i, len(Layer.objects.all()))
-            for metric in metrics:
-                for j, act_layer in enumerate(act_layers):
+            # Теперь расчитываем значения value ля каждого вида деятельности
+            counter = [0 for _ in range(len(activity_layers))]
+            for m_i, metric in enumerate(metrics):
+                for al_i, activity_layer in enumerate(activity_layers):
+                # for j in range(10):
                     # находим слой с такой же метрикой и такой же стартовой точкой в общей таблице по слоям
-                    layer = layers.filter(metric=metric, lat=act_layer.lat, lon=act_layer.lon).first()
+                    points = CoordinateData.objects.select_related('activity').filter(metric=metric).first()
+                    if points.activity is not None:
+                        layer = layers.filter(metric=metric, lat=activity_layers[al_i].lat, lon=activity_layers[al_i].lon, activity=activity).first()
+                    else:
+                        layer = layers.filter(metric=metric, lat=activity_layers[al_i].lat, lon=activity_layers[al_i].lon).first()
                     # суммируем исходное значение со значением в секторе по метрике с учетом коэффициента конкретного
                     # вида деятельности
-                    act_layers[j].value = act_layers[j].value + activity['config'][metric.id - 1] * layer.value
-                # найдем среднее арифметическое для каждого сектора общей карты
-                for j, _ in enumerate(act_layers):
-                    act_layers[j].value = act_layers[j].value / len(metrics)
+                    # temp = (activity['config'][m_i] - 1) / 4
+                    # print('act_layers[',j,'].value = ', act_layers[j].value, '+', temp, '*', layer.value, '=', act_layers[j].value + temp * layer.value)
+                    activity_layers[al_i].value = activity_layers[al_i].value + activity.config[m_i]*layer.value
+                    if layer.value * activity.config[m_i] != 0:
+                        counter[al_i] = counter[al_i] + 1
 
-                dts[i].objects.bulk_update(act_layers, ['value'])
+            for al_i, activity_layer in enumerate(activity_layers):
+                try:
+                    activity_layers[al_i].value = activity_layers[al_i].value / (5*counter[al_i])
+                    if activity_layers[al_i].value < 0.03:
+                        activity_layers[al_i].value = 0
+                except ZeroDivisionError:
+                    activity_layers[al_i].value = 0
+
+            dts[t_i].objects.bulk_update(activity_layers, ['value'])
+            # найдем среднее арифметическое для каждого сектора общей карты
+            # # print('***********************************************')
+            # max = 0
+            # i_max = -1
+            # for j, _ in enumerate(act_layers):
+            #     try:
+            #         # print('act_layers[', j, '].value = ', act_layers[j].value, '/', counter[j], ' = ', act_layers[j].value / counter[j])
+            #         act_layers[j].value = act_layers[j].value / counter[j]
+            #     except ZeroDivisionError:
+            #         act_layers[j].value = 0
+            #     if max < act_layers[j].value:
+            #         max = act_layers[j].value
+            #         i_max = j
+            #     # Привести к единому формату [0, 1]
+            #     # print('act_layers[j].value = (', act_layers[j].value, '-1)/4 = ', (act_layers[j].value - 1) / 4)
+            #     # act_layers[j].value = (act_layers[j].value - 1) / 4
+            # print(max, i_max)
+            # dts[i].objects.bulk_update(act_layers, ['value'])
 
 
 class ActivitiesWrapper:
-
+    @staticmethod
     def all():
         activities = Activity.objects.select_related('scope')
         data = list(activities.values('id', 'name', 'scope_id', 'config', scope_name=F('scope__name')))
@@ -417,25 +538,27 @@ class ActivitiesWrapper:
 
 
 class HeatMapWrapper:
+    @staticmethod
     def generate_map(is_zero=True):
         layers = LayerBuilder.generate_layers(is_zero=is_zero)
         return layers
 
-    def get_rand_heatmap(act_id):  # генерация случайной карты
+    @staticmethod
+    def get_rand_heatmap(act_id=None):  # генерация случайной карты
         LayerBuilder.generate_layers(is_zero=False, on_delete=True)
         return list(Layer.objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
 
+    @staticmethod
     def get_from_db(act_id):  # достать карту для выбранной активности
         activity = Activity.objects.get(id=act_id)
-        # print(activity.table_name)
         for j, name in enumerate(table_names):
             if activity.table_name == name:
-                # print(j)
                 return list(dts[j].objects.all().values('id', 'lon', 'lat', 'lon_distance', 'lat_distance', 'value'))
         return []
 
+    @staticmethod
     def get_sector_data(sector_id, act_id):
-        data1 = {'metrics': [], 'general_value': 0}
+        out_data = {'metrics': [], 'general_value': 0}
         activity = Activity.objects.get(id=act_id)
         for j, name in enumerate(table_names):
             if activity.table_name == name:
@@ -443,21 +566,19 @@ class HeatMapWrapper:
         # j = next(i for i, x in enumerate(table_names) if x == activity.table_name)
 
         data = dts[j].objects.get(id=sector_id)
-        datas = Layer.objects.all()
-        for i, d in enumerate(datas):
-            if (d.lat == data.lat) and (d.lon == data.lon):
-                break
+        out_data['general_value'] = data.value
+        layers = Layer.objects.all().filter(lat=data.lat, lon=data.lon)
 
         config = activity.config
         metrics = Metric.objects.all()
-        layers = Layer.objects.all()
+        # layers = Layer.objects.all()
         for k, _ in enumerate(metrics):
-            value_from_layers_table = layers[i].value
+            layer = layers.filter(metric_id=_.id).first()
+            # value_from_layers_table = layers[i].value
+            value_from_layers_table = layer.value
             value = value_from_layers_table*config[k]
-            data1['metrics'].append({'metric_id': _.id, 'value': value})
-
-        data1['general_value'] = data.value
-        return data1
+            out_data['metrics'].append({'metric_id': _.id, 'value': value/5})
+        return out_data
 
 
 class SubwayWrapper:

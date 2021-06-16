@@ -1,4 +1,5 @@
 from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render
 from rest_framework import status
 from rest_framework.exceptions import ParseError
 from rest_framework.parsers import JSONParser
@@ -17,8 +18,6 @@ from db.business_logic import (
     LayerBuilder,
     SubwayWrapper
 )
-
-from db.models import Layer
 
 
 class SendCoordinateDataView(APIView):
@@ -114,11 +113,11 @@ def generate_zero_layers(request, on_delete):
 #  - построение слоев по метрикам и по секциям
 #  - построение общих слоев для каждого вида деятельности
 def process_data(request):
-    data = LayerBuilder.process_coordinates()       # out - сгруппированные точки CoordinateData по секциям и метрикам
+    LayerBuilder.process_coordinates()       # out - сгруппированные точки CoordinateData по секциям и метрикам
     # print(len(Layer.objects.all()))
-    data = LayerBuilder.scale_values(data)          # out - слои с приведенными значениями
+    LayerBuilder.scale_values()          # out - слои с приведенными значениями
     # print(len(Layer.objects.all()))
-    LayerBuilder.get_general_layers(data)           # построить слой с обощенными метриками
+    LayerBuilder.get_general_layers()           # построить слой с обощенными метриками
     # print(len(Layer.objects.all()))
     return HttpResponse('done')
 
@@ -142,3 +141,7 @@ def get_sector_data(request):
 
 def get_some_offices(request):
     return JsonResponse({'data': OfficesDataWrapper.some()})
+
+
+def index(request):
+    return render(request, 'index.html')
